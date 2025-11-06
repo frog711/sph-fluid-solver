@@ -35,4 +35,13 @@ namespace render {
         }
         window->draw(vertices.data(), vertices.size(), sf::PrimitiveType::Triangles);
     }
+
+    void Renderer::renderCircles(int particleCount, std::vector<simulate::particle> particles) {
+        for (int i = 0; i < particleCount; i++) {
+            sf::CircleShape shape(particles[i].size / 2);
+            shape.setFillColor(sf::Color(particles[i].rgb[0], particles[i].rgb[1], particles[i].rgb[2]));
+            shape.setPosition({particles[i].pos[0] - particles[i].size / 2, particles[i].pos[1] - particles[i].size / 2});
+            window->draw(shape);
+        }
+    }
 }
