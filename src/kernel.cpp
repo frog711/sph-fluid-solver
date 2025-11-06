@@ -63,7 +63,6 @@ namespace kernel {
                         derivative[i][j][k] = (particles[i].pos[k] - particles[j].pos[k]) * common;
                     }
                 }
-                std::cout << "6\n";
             }
         } 
     }

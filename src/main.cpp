@@ -41,10 +41,14 @@ void runSimulation(std::string input, int simulationSteps) {
     kernel.calculateKernelDerivative();
     for (int i = 0; i < simulator.getParticles().size(); i++) {
         double sum = 0;
+        double derivSumX = 0;
+        double derivSumY = 0;
         for (int j = 0; j < simulator.getParticles().size(); j++) {
             sum += kernel.getKernelEntry(i, j);
+            derivSumX += kernel.getDerivativeEntry(i, j)[0];
+            derivSumY += kernel.getDerivativeEntry(i, j)[1];
         }
-        std::cout << "Kernel: " << sum << ", Derivative: " << kernel.getDerivativeEntry(i, i)[0] << ", " << kernel.getDerivativeEntry(i, i)[1] << "\n";
+        std::cout << i << " Kernel: " << sum << ", Derivative: " << derivSumX << ", " << derivSumY << "\n";
     }
     std::cout << "Tmp: " << kernel.getDerivativeEntry(3, 4)[0] << ", " << kernel.getDerivativeEntry(4, 3)[0] << " \n";
     renderer.setupParticles(100, simulator.getParticles());
@@ -60,7 +64,7 @@ void runSimulation(std::string input, int simulationSteps) {
         }
         window.clear();
         auto neigh = simulator.specificNeighborSearch({80, 80});
-        //simulator.simulateStepSimple();
+        simulator.simulateStepSimple();
         sf::CircleShape shape(20 * 1.9);
         shape.setRadius(19 * 2);
         // set a 10-pixel wide orange outline
