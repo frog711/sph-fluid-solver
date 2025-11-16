@@ -1,131 +1,174 @@
 #include "simulate.hpp"
 #include "parser.hpp"
+#include "kernel.hpp"
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <string>
 namespace simulate {
-    Simulator::Simulator() { 
+    Simulator::Simulator(config conf) { 
         std::random_device r;
         std::default_random_engine e1(r());
         this->e1 = e1;
+        this->conf = conf;
     }
 
-    void Simulator::parseFile(std::string path) {
-        parser::Parser parser;
-        parser.open(path);
-        this->particleCount = parser.getParticleCount();
-        this->dimensions = parser.getDimension();
-        this->bounds = parser.getBounds();
-        this->particles.resize(this->particleCount);
-        std::cout << "P: " << particleCount << "\n";
-        std::cout << "A: " << particles.size() << "\n";
+    void Simulator::updateConf(config conf) {
+        this->kernel->updateConf(conf);
+        this->conf = conf;
+    }
+
+    config Simulator::parseFile(std::string path) {
+        auto parser = parser::Parser();
+        bool parsed = parser.open(path);
+        if (!parsed) throw "File error";
+        this->conf = parser.getParsedConfig();
+        this->conf.activeParticles = 0;
+        this->particles.resize(conf.particleCount);
         std::uniform_int_distribution<> distRGB(0, 255);
-        for (int i = 0; i < particleCount; i++) {
+        for (int i = 0; i < conf.particleCount; i++) {
             particle current = this->particles[i];
             parser.parseNextParticle(this->particles.data() + i);
-            particles[i].rgb = {char(200), char(200), char(200)};
+            if (particles[i].isStationary) particles[i].rgb = {char(200), char(200), char(200)};
+            else particles[i].rgb = {char(0), char(0), char(200)};
+            particles[i].restDensity = particles[i].mass / std::pow(conf.h, 2);
+            particles[i].acc.resize(conf.dim);
+            if (!particles[i].isStationary) this->conf.activeParticles++;
         }
+        int uncheckedBoundary = conf.activeParticles;
+        for (int i = 0; i < conf.activeParticles; i++) {
+            //Invariant: Particles < i are active
+            //Particles >= conf.activeParticles & < uncheckedBoundary are boundary
+            if (particles[i].isStationary) {
+                //Search for fluid particle after boundary
+                while (!particles[uncheckedBoundary++].isStationary) {
+                    if (uncheckedBoundary == conf.particleCount) {
+                        throw "Out of bounds";
+                    }
+                }
+                if (particles[uncheckedBoundary].isStationary) {
+                    throw "Invalid fluid particle count";
+                }
+                particle tmp = particles[i];
+                particles[i] = particles[uncheckedBoundary];
+                particles[uncheckedBoundary] = tmp;
+            }
+        }
+        return this->conf;
     }
 
-    void Simulator::setupParticles(std::vector<int> particleCount, std::vector<int> limit) {
-        this->particleCount = particleCount[0] * particleCount[1];
-        this->bounds = limit;
-        double size = std::min(limit[0] / particleCount[0], limit[1] / particleCount[1]) / 2;
-        particles.resize(this->particleCount);
-        std::uniform_int_distribution<> distX(0, bounds[0]);
-        std::uniform_int_distribution<> distY(0, bounds[1]);
-        std::uniform_real_distribution<> distV(-2, 2);
-        std::uniform_int_distribution<> distRGB(0, 255);
-        for (int x = 0; x < particleCount[0]; x++) {
-            for (int y = 0; y < particleCount[1]; y++) {
-                int i = y * particleCount[1] + x;
-                particles[i].size = int(size);
-                particles[i].pos = {std::cos(0.5) * size * x + std::sin(0.5) * size * y + size / 2, -std::sin(0.5) * size * x + std::cos(0.5) * size * y + size / 2};
-                particles[i].speed = {double(distV(e1)), double(distV(e1))};
-                particles[i].rgb = {char(distRGB(e1)), char(distRGB(e1)), char(distRGB(e1))};
-            }
-        }
-    }
-
-    /**
-    Simulate one time step for all particles
-    Only for 2d so far
-    */
-    void Simulator::simulateStepRandom() {
-        std::uniform_real_distribution<> distAcc(-1, 1);
-        std::uniform_int_distribution<> distX(0, bounds[0]);
-        std::uniform_int_distribution<> distY(0, bounds[0]);
-        for (int i = 0; i < particleCount; i++) {
-            particles[i].speed[0] = particles[i].speed[0] + distAcc(e1);
-            particles[i].speed[1] = particles[i].speed[1] + distAcc(e1);
-            if (particles[i].speed[0] > 3 || particles[i].speed[0] < -3) {
-                particles[i].speed[0] = 3 * sign(particles[i].speed[0]);
-            }
-            if (particles[i].speed[1] > 3 || particles[i].speed[1] < -3) {
-                particles[i].speed[1] = 3 * sign(particles[i].speed[1]);
-            }
-            particles[i].pos[0] = particles[i].pos[0] + particles[i].speed[0];
-            particles[i].pos[1] = particles[i].pos[1] + particles[i].speed[1];
-            if (particles[i].pos[0] > bounds[0] || particles[i].pos[0] < 0 ||
-                particles[i].pos[1] > bounds[1] || particles[i].pos[1] < 0) {
-                particles[i].pos[0] = distX(e1);
-                particles[i].pos[1] = distY(e1);
-            }
-        }
+    void Simulator::addKernel(kernel::Kernel* kernel) {
+        this->kernel = kernel;
     }
 
     /**
     Simulate one time step for all particles
     */
-    void Simulator::simulateStepSimple() {
-        for (int i = 0; i < particleCount; i++) {
-            for (int j = 0; j < dimensions; j++) {
-                particles[i].pos[j] = particles[i].pos[j] + particles[i].speed[j];
-            }
-        }
+    void Simulator::simulateStep() {
+        computeAcceleration();
+        performUpdateStep();
     }
 
-    void Simulator::completeNeighborSearch() {
-        quadraticNeighborSearch();
+    void Simulator::computeAcceleration() {
+        for (int i = 0; i < conf.particleCount; i++) {
+            for (int d = 0; d < conf.dim; d++) particles[i].acc[d] = 0.0;
+        }
+        //std::cout << "Init: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        kernel->completeNeighborSearch();
+        kernel->calculateKernel();
+        kernel->calculateKernelDerivative();
+        computeExternalForces();
+        //std::cout << "Ext: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        computePressureForces();
+        //std::cout << "Pre: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        computeViscousForces();
+        //std::cout << "Vic: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
     }
 
-    void Simulator::quadraticNeighborSearch() {
-        for (int i = 0; i < particleCount; i++) {
-            particles[i].neighbors.clear();
-        }
-        for (int i = 0; i < particleCount; i++) {
-            particles[i].neighbors.push_back(i);
-            for (int j = i + 1; j < particleCount; j++) {
-                double dist2 = getSquaredDistance(particles[i].pos, particles[j].pos, dimensions);
-                if (dist2 < std::pow(kernelSupport * particles[i].size, 2)) {
-                    particles[i].neighbors.push_back(j);
+    void Simulator::computeViscousForces() {
+        for (int i = 0; i < conf.activeParticles; i++) {
+            for (int k = 0; k < particles[i].neighbors.size(); k++) {
+                int j = particles[i].neighbors[k];
+                std::vector<double> dW = kernel->getDerivativeEntry(i, j);
+                double coef = 2 * conf.nu * particles[j].mass / particles[j].density;
+                if (particles[j].isStationary) {
+                    coef = 2 * conf.nu * particles[j].mass / particles[i].density;
                 }
-                if (dist2 < std::pow(kernelSupport * particles[j].size, 2)) {
-                    particles[j].neighbors.push_back(i);
+                for (int d = 0; d < conf.dim; d++) {
+                    double vij = particles[i].speed[d] - particles[j].speed[d];
+                    double xij = particles[i].pos[d] - particles[j].pos[d];
+                    particles[i].acc[d] += coef * (vij * xij) / (xij * xij + 0.01 * conf.h * conf.h) * dW[d];
                 }
             }
-        }
-        for (int i = 0; i < particleCount; i++) {
-            std::cout << i << ": " << particles[i].neighbors.size() << "\n";
+            //std::cout << "Acc: " << particles[i].acc[0] << ", " << particles[i].acc[1] << "\n";
         }
     }
 
-    std::vector<int> Simulator::specificNeighborSearch(std::vector<double> pos) {
-        std::vector<int> neighbors;
-        for (int i = 0; i < particleCount; i++) {
-            double dist2 = getSquaredDistance(particles[i].pos, pos, dimensions);
-            if (dist2 < std::pow(kernelSupport * particles[i].size, 2)) {
-                neighbors.push_back(i);
-                particles[i].rgb = {char(200), 0, 0};
-            } else {
-                particles[i].rgb = {char(200), char(200), char(200)};
+    void Simulator::computePressureForces() {
+        //std::cout << "Start pressure computation\n";
+        for (int i = 0; i < conf.activeParticles; i++) {
+            particles[i].density = 0.0;
+            for (int k = 0; k < particles[i].neighbors.size(); k++) {
+                int j = particles[i].neighbors[k];
+                particles[i].density += particles[j].mass * kernel->getKernelEntry(i, j);
+            }
+            particles[i].pressure = std::max(conf.k * (particles[i].density / particles[i].restDensity - 1), 0.0);
+            //std::cout << "Neighbor count: " << particles[i].neighbors.size() << "\n";
+            //std::cout << "Density: " << particles[i].density << " Pressure: " << particles[i].pressure << "\n";
+        }
+        for (int i = 0; i < conf.activeParticles; i++) {
+            std::vector<double> sumDW = {0.0, 0.0};
+            for (int k = 0; k < particles[i].neighbors.size(); k++) {
+                int j = particles[i].neighbors[k];
+                std::vector<double> dW = kernel->getDerivativeEntry(i, j);
+                double coef = particles[j].mass * (particles[i].pressure / std::pow(particles[i].density, 2) + 
+                    particles[j].pressure / std::pow(particles[j].density, 2));
+                if (particles[j].isStationary) {
+                    coef = particles[j].mass * 2 * (particles[i].pressure / std::pow(particles[i].density, 2));
+                }
+                for (int d = 0; d < conf.dim; d++) {
+                    particles[i].acc[d] -= coef * dW[d];
+                    sumDW[d] += dW[d];
+                }
             }
         }
-        return neighbors;
+    }
+
+    double Simulator::getTotalEnergy() {
+        double energy = 0;
+        for (int i = 0; i < conf.activeParticles; i++) {
+            energy += particles[i].pressure * conf.h * conf.h / conf.k;
+            for (int d = 0; d < conf.dim; d++) {
+                energy += 0.5 * particles[i].mass * particles[i].speed[d] * particles[i].speed[d];
+                energy += conf.area[d] - particles[i].mass * conf.g[d] * particles[i].pos[d];
+            }
+        }
+        return energy;
+    }
+
+    void Simulator::computeExternalForces() {
+        for (int i = 0; i < conf.activeParticles; i++) {
+            for (int d = 0; d < conf.dim; d++) {
+                particles[i].acc[d] += conf.g[d];
+            }
+        }
+    }
+
+    void Simulator::performUpdateStep() {
+        for (int i = 0; i < conf.activeParticles; i++) {
+            for (int d = 0; d < conf.dim; d++) {
+                particles[i].speed[d] += particles[i].acc[d] * conf.timestep;
+                particles[i].pos[d] += particles[i].speed[d] * conf.timestep;
+            }
+        }
     }
 
     std::vector<particle> Simulator::getParticles() {
         return this->particles;
+    }
+
+    particle* Simulator::getParticleData() {
+        return this->particles.data();
     }
 
     int sign(int x) {

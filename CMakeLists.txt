@@ -12,6 +12,14 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 add_library(structures src/structures.cpp)
 
 add_library(parser src/parser.cpp)
@@ -31,3 +39,19 @@ target_link_libraries(render PRIVATE SFML::Graphics simulation)
 add_executable(main src/main.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics simulation render kernel)
+
+add_executable(reflectionTest data/energyTest.cpp)
+target_compile_features(reflectionTest PRIVATE cxx_std_17)
+target_link_libraries(reflectionTest PRIVATE simulation kernel)
+
+enable_testing()
+
+add_executable(
+  kernel_test
+  test/kernel_test.cpp
+)
+target_link_libraries(kernel_test GTest::gtest_main structures simulation kernel)
+
+include(GoogleTest)
+gtest_discover_tests(kernel_test)
+

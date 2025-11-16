@@ -11,16 +11,12 @@ namespace parser {
         public:
             Parser();
             bool open(std::string path);
-            int getParticleCount();
-            int getDimension();
-            std::vector<int> getBounds();
+            config getParsedConfig();
             void parseNextParticle(particle* target);
             void close();
         private:
             std::fstream file;
-            int dim;
-            int particleCount;
-            std::vector<int> bounds;
+            config conf;
             std::vector<std::string> split(std::string, char delim);
     };
 }

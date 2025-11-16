@@ -2,6 +2,7 @@
 #include <random>
 #include "structures.hpp"
 #include "parser.hpp"
+#include "kernel.hpp"
 #ifndef SIMULATE
 #define SIMULATE
 
@@ -10,22 +11,24 @@ namespace simulate {
     class Simulator
     {
     public:
-        Simulator();
-        void parseFile(std::string path);
-        void setupParticles(std::vector<int> particleCount, std::vector<int> limit);
-        void simulateStepRandom();
-        void simulateStepSimple();
-        void completeNeighborSearch();
-        std::vector<int> specificNeighborSearch(std::vector<double> pos);
+        Simulator(config conf);
+        void updateConf(config conf);
+        config parseFile(std::string path);
+        void addKernel(kernel::Kernel* kernel);
+        void simulateStep();
+        double getTotalEnergy();
         std::vector<particle> getParticles();
+        particle* getParticleData();
     private:
+        config conf;
+        kernel::Kernel *kernel;
         std::default_random_engine e1;
-        int dimensions;
-        int particleCount;
-        double kernelSupport = 1.9;
         std::vector<particle> particles;
-        std::vector<int> bounds;
-        void quadraticNeighborSearch();
+        void performUpdateStep();
+        void computeAcceleration();
+        void computePressureForces();
+        void computeViscousForces();
+        void computeExternalForces();
     };
 
     int sign(int x);

@@ -6,16 +6,43 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include "structures.hpp"
 #include "kernel.hpp"
+#include <format>
+
 
 
 std::random_device r;
 std::default_random_engine e1(r());
-static int xRes = 500u;
-static int yRes = 500u;
+static int xRes = 600u;
+static int yRes = 600u;
+double maxSpeed = 0;
+std::vector<double> lost;
 
+structures::config conf;
 
+void writeAnalysis(simulate::particle* p, std::ofstream* file) {
+    double speed = std::sqrt(p->speed[0] * p->speed[0] + p->speed[1] * p->speed[1]);
+    if (speed > maxSpeed && p->rgb[0] == 0) {
+        maxSpeed = speed;
+        *file << "S: " << maxSpeed << "\n";
+    }
+    if ((p->pos[0] > 85 || p->pos[1]) > 85 && p->rgb[0] == 0) {
+        *file << "P: " << p->pos[0] << "," << p->pos[1] << "\n";
+        p->rgb = {char(200), 0, 0};
+    }
+}
 
+void saveScreen(sf::RenderWindow* window, int step, char* path) {
+    sf::Texture texture({xRes, yRes});
+    texture.update(*window);
+    std::stringstream files;
+    files << path << "/step" << step << ".png";
+    std::string file = files.str();
+    texture.copyToImage().saveToFile(file);
+    //    {
+    //std::cout << "screenshot saved to " << filename << std::endl;
+}
 
 void writeMeasurements(char* path, std::string particleCount, int simulationSteps, int seconds, time_t duration) {
     std::ofstream myfile;
@@ -24,35 +51,31 @@ void writeMeasurements(char* path, std::string particleCount, int simulationStep
     myfile.close();
 }
 
-void runSimulation(std::string input, int simulationSteps) {
+void writeEnergy(char* path, simulate::Simulator* sim) {
+    std::ofstream myfile;
+    myfile.open (path, std::ios::app);
+    myfile << sim->getTotalEnergy() << ",";
+    myfile.close();
+}
+
+void runSimulation(std::string input, int simulationSteps, char* path) {
     auto window = sf::RenderWindow(sf::VideoMode({xRes, yRes}), "CMake SFML Project");
     window.setSize({xRes, yRes});
     window.setPosition({100, 100});
     window.setFramerateLimit(144);
-    std::cout << "0\n";
-    auto simulator = simulate::Simulator();
-    auto renderer = render::Renderer(&window, {xRes, yRes});
-    simulator.parseFile(input);
-    simulator.completeNeighborSearch();
-    auto neigh = simulator.specificNeighborSearch({200, 150});
-    kernel::Kernel kernel;
-    kernel.initialize(simulator.getParticles(), simulator.getParticles().size(), 2, 20);
-    kernel.calculateKernel();
-    kernel.calculateKernelDerivative();
-    for (int i = 0; i < simulator.getParticles().size(); i++) {
-        double sum = 0;
-        double derivSumX = 0;
-        double derivSumY = 0;
-        for (int j = 0; j < simulator.getParticles().size(); j++) {
-            sum += kernel.getKernelEntry(i, j);
-            derivSumX += kernel.getDerivativeEntry(i, j)[0];
-            derivSumY += kernel.getDerivativeEntry(i, j)[1];
-        }
-        std::cout << i << " Kernel: " << sum << ", Derivative: " << derivSumX << ", " << derivSumY << "\n";
-    }
-    std::cout << "Tmp: " << kernel.getDerivativeEntry(3, 4)[0] << ", " << kernel.getDerivativeEntry(4, 3)[0] << " \n";
-    renderer.setupParticles(100, simulator.getParticles());
-    std::cout << "Particle set up\n";
+    auto simulator = simulate::Simulator(conf);
+    conf = simulator.parseFile(input);
+    auto renderer = render::Renderer(&window, {xRes, yRes}, conf);
+    kernel::Kernel kernel = kernel::Kernel(conf);
+    kernel.initialize(simulator.getParticleData());
+    simulator.addKernel(&kernel);
+    //std::cout << "Tmp: " << kernel.getDerivativeEntry(3, 4)[0] << ", " << kernel.getDerivativeEntry(4, 3)[0] << " \n";
+    renderer.initialize(simulator.getParticleData());
+
+    std::stringstream dumpS;
+    dumpS << path << "/info.txt";
+    std::string dump = dumpS.str();
+
     for (int step = 0; step < simulationSteps; step++)
     {
         while (const std::optional event = window.pollEvent())
@@ -63,18 +86,20 @@ void runSimulation(std::string input, int simulationSteps) {
             }
         }
         window.clear();
-        auto neigh = simulator.specificNeighborSearch({80, 80});
-        simulator.simulateStepSimple();
-        sf::CircleShape shape(20 * 1.9);
-        shape.setRadius(19 * 2);
-        // set a 10-pixel wide orange outline
-        shape.setOutlineThickness(2.f);
-        shape.setPosition({80 - 2 * 19, 80 - 2 * 19});
-        shape.setOutlineColor(sf::Color(0, 150, 0));
-        window.draw(shape);
-        renderer.renderCircles(simulator.getParticles().size(), simulator.getParticles());
+        simulator.simulateStep();
+        std::ofstream myfile;
+        myfile.open (dump, std::ios::app);
+        for (int i = 0; i < conf.activeParticles; i++) {
+            writeAnalysis(simulator.getParticleData() + i, &myfile);
+        }
+        myfile.close();
+        renderer.renderCircles();
 
         window.display();
+        std::cout << "Step: " << step << ": " << step % 10 << "\n";
+        if (step % 10 == 0) {
+            saveScreen(&window, step, path);
+        }
     }
     window.close();
 }
@@ -85,8 +110,8 @@ int main(int argc, char** argv) {
     char* file = argv[3];
     time_t start = clock();
     time_t startTime = time(NULL);
-    runSimulation(input, simulationSteps);
+    runSimulation(input, simulationSteps, file);
     time_t end = clock();
     time_t endTime = time(NULL);
-    writeMeasurements(file, input, simulationSteps, difftime(endTime, startTime), end - start);
+    //writeMeasurements(file, input, simulationSteps, difftime(endTime, startTime), end - start);
 }

@@ -6,12 +6,31 @@
 #define STRUCT
 namespace structures {
     typedef struct particle {
-        double size;
+        bool isStationary;
+        double restDensity;
+        double density;
+        double pressure;
+        double mass;
         std::vector<double> pos;
         std::vector<double> speed;
+        std::vector<double> acc;
         std::vector<char> rgb;
         std::vector<int> neighbors;
     } particle;
+
+    typedef struct config {
+        int particleCount;
+        int activeParticles;
+        int dim;
+        double h;
+        double k;
+        double nu;
+        double kernelSupport;
+        bool fastRender;
+        double timestep;
+        std::vector<double> g;
+        std::vector<double> area;
+    } config;
 
     double getSquaredDistance(std::vector<double> a, std::vector<double> b, int dim);
 

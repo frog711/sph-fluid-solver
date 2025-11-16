@@ -9,16 +9,26 @@ namespace parser {
             std::string sa;
             getline(file, sa);
             auto tokens = split(sa, ' ');
-            if (tokens.size() < 2) {
+            if (tokens.size() < 8) {
+                std::cout << "Header should have at least 8 tokens\n";
                 throw "Invalid line";
             }
-            particleCount = std::stoi(tokens[0]);
-            dim = std::stoi(tokens[1]);
-            if (tokens.size() != dim + 2) {
+            conf.particleCount = std::stoi(tokens[0]);
+            conf.dim = std::stoi(tokens[1]);
+            if (conf.dim != 2) throw "Only support dimensions 2.";
+            conf.h = std::stod(tokens[2]);
+            conf.k = std::stod(tokens[3]);
+            conf.nu = std::stod(tokens[4]);
+            conf.kernelSupport = std::stod(tokens[5]);
+            conf.fastRender = std::stoi(tokens[6]);
+            conf.timestep = std::stod(tokens[7]);
+            if (tokens.size() != 2 * conf.dim + 8) {
+                std::cout << "Header should have 8 + 2 * " << conf.dim << " tokens\n";
                 throw "Invalid line";
             }
-            for (int i = 0; i < dim; i++) {
-                bounds.push_back(std::stoi(tokens[2 + i]));
+            for (int i = 0; i < conf.dim; i++) {
+                conf.g.push_back(std::stod(tokens[8 + i]));
+                conf.area.push_back(std::stoi(tokens[8 + conf.dim + i]));
             }
         }
         return file.is_open();
@@ -28,30 +38,24 @@ namespace parser {
         file.close();
     }
 
-    int Parser::getParticleCount() {
-        return particleCount;
-    }
-
-    int Parser::getDimension() {
-        return dim;
-    }
-
-    std::vector<int> Parser::getBounds() {
-        return bounds;
+    //Returns a partial configuration with all the information parsed from the file
+    config Parser::getParsedConfig() {
+        return conf;
     }
 
     void Parser::parseNextParticle(particle* target) {
         std::string sa;
         getline(file, sa);
         auto tokens = split(sa, ',');
-        if (tokens.size() != 2 * dim + 1) {
+        if (tokens.size() != 2 * conf.dim + 2) {
             std::cout << "Particle: " << sa << ", " << tokens.size() << "\n";
             throw "Invalid line";
         }
-        target->size = std::stoi(tokens[0]);
-        for (int i = 0; i < dim; i++) {
-            target->pos.push_back(std::stod(tokens[1 + i]));
-            target->speed.push_back(std::stof(tokens[1 + dim + i]));
+        target->isStationary = std::stoi(tokens[0]);
+        target->mass = std::stod(tokens[1]);
+        for (int i = 0; i < conf.dim; i++) {
+            target->pos.push_back(std::stod(tokens[i + 2]));
+            target->speed.push_back(std::stod(tokens[conf.dim + i + 2]));
         }
     }
 

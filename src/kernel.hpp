@@ -1,26 +1,33 @@
 #include "structures.hpp"
 #include <map>
 
+#ifndef KERNEL
+#define KERNEL
+
 namespace kernel {
     using namespace structures;
 
     class Kernel {
         public: 
-            Kernel();
+            Kernel(config conf);
             //The particles should not change during the simulation
-            void initialize(std::vector<particle> particles, int particleCount, int dim, int h);
+            void updateConf(config conf);
+            void initialize(particle* particles);
+            void completeNeighborSearch();
+            std::vector<int> specificNeighborSearch(std::vector<double> pos);
             void calculateKernel();
             double getKernelEntry(int i, int j);
             void calculateKernelDerivative();
             std::vector<double> getDerivativeEntry(int i, int j);
 
         private:
-            std::vector<particle> particles;
+            config conf;
+            particle* particles;
             std::vector<std::map<int, double>> kernel;
             std::vector<std::map<int, std::vector<double>>> derivative; 
-            int particleCount;
-            int dim;
-            int h;
+            void quadraticNeighborSearch();
             double getFactor();
     };
 }
+
+#endif
