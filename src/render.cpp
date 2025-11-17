@@ -8,7 +8,7 @@ namespace render {
     std::vector<std::vector<int>> shape = {{-2,0},{-1,-1},{-1,0},{-1,1},{0,-2},{0,-1},{0,0},{0,1},{0,2},
                 {1,-1},{1,0},{1,1},{2,0}};
 
-    Renderer::Renderer(sf::RenderWindow* window, std::vector<int> res, config conf) {
+    Renderer::Renderer(sf::RenderTarget* window, std::vector<int> res, config conf) {
         this->window = window;
         this->res = res;
         this->conf = conf;
@@ -27,6 +27,10 @@ namespace render {
             vertices.push_back(vertex2);
             vertices.push_back(vertex3);
         }
+    }
+
+    void Renderer::updateConf(config conf) {
+        this->conf = conf;
     }
 
     int Renderer::transformSize(double initial) {

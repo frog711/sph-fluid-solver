@@ -9,8 +9,9 @@ namespace render {
     using namespace structures;
     class Renderer {
     public:
-        Renderer(sf::RenderWindow* window, std::vector<int> res, config conf);
+        Renderer(sf::RenderTarget* window, std::vector<int> res, config conf);
         void initialize(particle* particles);
+        void updateConf(config conf);
         void renderParticles();
         void renderCircles();
     private:
@@ -18,7 +19,7 @@ namespace render {
         int transformSize(double size);
         config conf;
         std::vector<int> res;
-        sf::RenderWindow* window;
+        sf::RenderTarget* window;
         particle* particles;
         std::vector<sf::Vertex> vertices;
         void addParticleRender(simulate::particle element, std::vector<sf::Vertex>* render);
