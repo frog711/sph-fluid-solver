@@ -36,7 +36,7 @@ namespace render {
     int Renderer::transformSize(double initial) {
         if (conf.dim != 2) throw "Rendering is only supported for 2D particles";
         double maxRes = std::min(res[0] / conf.area[0], res[1] / conf.area[1]);
-        return int(initial * maxRes);
+        return initial * maxRes;
     }
 
     std::vector<int> Renderer::transformPoint(std::vector<double> initial) {
@@ -73,6 +73,7 @@ namespace render {
             sf::CircleShape shape;
             shape.setRadius(size / 2);
             shape.setFillColor(sf::Color(particles[i].rgb[0], particles[i].rgb[1], particles[i].rgb[2]));
+            shape.setOutlineThickness(0);
             shape.setPosition({pos[0] - size / 2, pos[1] - size / 2});
             window->draw(shape);
         }

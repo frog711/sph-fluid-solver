@@ -35,6 +35,7 @@ namespace simulate {
             particles[i].acc.resize(conf.dim);
             if (!particles[i].isStationary) this->conf.activeParticles++;
         }
+        parser.close();
         int uncheckedBoundary = conf.activeParticles;
         for (int i = 0; i < conf.activeParticles; i++) {
             //Invariant: Particles < i are active

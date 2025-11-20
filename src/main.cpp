@@ -14,8 +14,8 @@
 
 std::random_device r;
 std::default_random_engine e1(r());
-static int xRes = 600u;
-static int yRes = 600u;
+static int xRes = 680u;
+static int yRes = 680u;
 double maxSpeed = 0;
 std::vector<double> lost;
 
@@ -97,9 +97,9 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
 
         window.display();
         std::cout << "Step: " << step << ": " << step % 10 << "\n";
-        if (step % 10 == 0) {
-            saveScreen(&window, step, path);
-        }
+        //if (step % 10 == 0) {
+        //    saveScreen(&window, step, path);
+        //}
     }
     window.close();
 }

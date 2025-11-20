@@ -91,9 +91,10 @@ void varyMass(char* file) {
     }
 }
 
-void resetScenario(double pos, int k, double timestep) {
-    simulator1.getParticleData()[0].pos = {2.5, pos};
-    simulator1.getParticleData()[0].speed = {0, 0};
+void resetScenario(double speed, int k, double timestep) {
+    double posx = simulator1.getParticleData()[0].pos[0];
+    simulator1.getParticleData()[0].pos = {2.5, 4.5};
+    simulator1.getParticleData()[0].speed = {0, speed};
     simulator1.getParticleData()[0].acc = {0, 0};
     conf1.k = k;
     conf1.timestep = timestep;
@@ -103,23 +104,24 @@ void resetScenario(double pos, int k, double timestep) {
 bool checkValidBounce(int expectedBounces, int upperLimit, double tolerance) {
     int direction = 1;
     int bounces = 0;
-    double maxHeight = 5.0 - simulator1.getParticles()[0].pos[1];
+    double maxHeight = 1.0 - simulator1.getParticles()[0].pos[1];
     for (int i = 0; i < upperLimit; i++) {
         simulator1.simulateStep();
-        double height = 5.0 - simulator1.getParticles()[0].pos[1];
+        double height = 1.0 - simulator1.getParticles()[0].pos[1];
+
         //Particle went through the boundary
         if (height < -1.0) {
-            //std::cout << "Bounds: " << conf1.timestep << ": " << height << "\n";
+            std::cout << "Bounds: " << conf1.timestep << ", " << simulator1.getParticles()[0].pos[1] << ": " << height << "\n";
             return false;
         }
         if (direction == -1 && simulator1.getParticles()[0].speed[1] >= 0) {
             if (height > maxHeight * upperError) {
-                //std::cout << "Explode: " << conf1.timestep << ": " << height << "/" << maxHeight << "\n";
+                std::cout << "Explode: " << conf1.timestep << ": " << height << "/" << maxHeight << "\n";
                 return false;
             }
             else if (height < maxHeight * tolerance) {
                 //std::cout << "Collapse: " << conf1.timestep << ": " << height << "\n";
-                return false;
+                //return false;
             }
             else {
                 bounces++;
@@ -134,11 +136,33 @@ bool checkValidBounce(int expectedBounces, int upperLimit, double tolerance) {
     return false;
 }
 
+double getEnergyLoss(int timeout) {
+    int direction = 1;
+    double initialHeight = 1.0 - simulator1.getParticles()[0].pos[1];
+    for (int i = 0; i < timeout; i++) {
+        simulator1.simulateStep();
+        double height = 1.0 - simulator1.getParticles()[0].pos[1];
+
+        //Particle went through the boundary
+        if (height < -1.0) {
+            std::cout << "Bounds: " << conf1.timestep << ", " << simulator1.getParticles()[0].pos[1] << ": " << height << "\n";
+            return -1;
+        }
+        if (direction == -1 && simulator1.getParticles()[0].speed[1] >= 0) {
+            return height / initialHeight;
+        } 
+        if (simulator1.getParticles()[0].speed[1] >= 0) direction = 1;
+        else direction = -1;
+    }
+    std::cout << "Timeout!\n";
+    return -1;
+}
+
 double findTimestepBound(double initPos, double startingPoint, double step, double timeout) {
     for (int i = 0; i < 10; i++) {
         double timestep = startingPoint + (10 - i) * step;
         resetScenario(initPos, conf1.k, timestep);
-        bool valid = checkValidBounce(10, timeout / step, 0.6);
+        bool valid = checkValidBounce(5, timeout / step, 0.5);
         if (valid) return timestep;
     }
     return -1;
@@ -164,16 +188,17 @@ void findMaximumTimestep(double step, double timeout) {
 
 //Search the space of (startingPoint, startingPoint + 10 * step] with precision step
 //for the lowest stiffness that stops the particle
-int findStiffnessBound(double initPos, int startingPoint, int step) {
+int findStiffnessBound(double initSpeed, int startingPoint, int step) {
     for (int i = 1; i <= 10; i++) {
-        resetScenario(initPos, startingPoint + i * step, conf1.timestep);
+        resetScenario(initSpeed, startingPoint + i * step, conf1.timestep);
         //std::cout << "Testing k=" << startingPoint + i * step << "\n";
         bool valid = true;
-        for (int s = 0; s < 1500; s++) {
+        for (int s = 0; s < 5000; s++) {
             simulator1.simulateStep();
             //The particle phased through the barrier
-            if (simulator1.getParticles()[0].pos[1] > 6) {
-                s = 1500;
+            if (simulator1.getParticles()[0].pos[1] > 5.5) {
+                //printf("Out of bounds %i\n", startingPoint + i * step);
+                s = 15000;
                 valid = false;
             }
             //The particle bounced
@@ -189,7 +214,7 @@ int findStiffnessBound(double initPos, int startingPoint, int step) {
     return -1;
 }
 
-void findMinimumStiffness(double initPos, int guess) {
+int findMinimumStiffness(double initPos, int guess) {
     int step = std::pow(10, std::floor(std::log10(guess)));
     int currentGuess = 0;
     while (step >= 10) {
@@ -197,7 +222,7 @@ void findMinimumStiffness(double initPos, int guess) {
         int result = findStiffnessBound(initPos, currentGuess, step);
         if (result < 0) {
             std::cout << "Could not find k between " << currentGuess << " and " << currentGuess + 10 * step << "\n";
-            return;
+            return -1;
         }
         else {
             //Guess should always be slightly to low
@@ -205,16 +230,33 @@ void findMinimumStiffness(double initPos, int guess) {
             step = step / 10;
         }
         std::cout << "Best guess: " << currentGuess << "\n";
-    }   
+    }  
+    return currentGuess; 
+}
+
+void plotEnergyLoss() {
+    for (int i = 0; i <= 400; i++) {
+        setup();
+        conf1.nu = i * 0.0025;
+        simulator1.updateConf(conf1);
+        std::cout << conf1.nu << ":" << getEnergyLoss(1500) << ",\n";
+    }
 }
 
 int main(int argc, char** argv) {
-    if (argc < 4) throw "Fail\n";
+    if (argc < 3) throw "Fail\n";
     setup();
-    //findMinimumStiffness(std::stod(argv[1]), std::stoi(argv[2]));
-    conf1.k = std::stoi(argv[3]);
-    findMaximumTimestep(std::stod(argv[1]), std::stod(argv[2]));
-    if (argc > 4) {
-        upperError = std::stoi(argv[4]);
+    int result = findMinimumStiffness(std::stod(argv[1]), std::stoi(argv[2]));
+    if (argc > 3) {
+        std::ofstream myfile;
+        myfile.open (argv[3], std::ios::app);
+        myfile << conf1.timestep << "," << argv[1] << "," << result << "\n";
+    myfile.close();
     }
+    //conf1.k = std::stoi(argv[3]);
+    //findMaximumTimestep(std::stod(argv[1]), std::stod(argv[2]));
+    //if (argc > 4) {
+    //    upperError = std::stoi(argv[4]);
+    //}
+    //plotEnergyLoss();
 }

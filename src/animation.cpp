@@ -31,16 +31,19 @@ int main(int argc, char** argv)
     sf::RenderTexture texture;
     texture.resize({xRes, yRes});
 
-    auto simulate = simulate::Simulator(conf);
-    auto renderer = render::Renderer(&texture, {xRes, yRes}, conf);
 
     for (const auto & entry : fs::directory_iterator(path)) {
         std::cout << entry.path() << std::endl;
-        conf = simulate.parseFile(entry.path().u8string());
-        renderer.initialize(simulate.getParticleData());
-        renderer.updateConf(conf);
-        renderer.renderCircles();
-        texture.display();
-        saveScreen(&texture, entry.path());
+        if (entry.path().extension() == ".txt") {
+            auto simulate = simulate::Simulator(conf);
+            auto renderer = render::Renderer(&texture, {xRes, yRes}, conf);
+            conf = simulate.parseFile(entry.path().u8string());
+            texture.clear();
+            renderer.initialize(simulate.getParticleData());
+            renderer.updateConf(conf);
+            renderer.renderCircles();
+            texture.display();
+            saveScreen(&texture, entry.path());
+        }
     }
 }

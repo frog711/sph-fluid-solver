@@ -6,9 +6,9 @@ n = 150 * 8 + 2 * 128 + 2500
 dim = 2
 k = 1000000
 m = 1000 * h * h
-nu = 0.05
+nu = 0
 kernelSupport = 2
-step = 0.01
+step = 0.001
 acc = [0, 9.81]
 
 def box():
@@ -29,7 +29,7 @@ def box():
 
 def plane():
     f = open("plane", "w+")
-    f.write(f"{n} {dim} {h} {k} {nu} {kernelSupport} {1} {step} {acc[0]} {acc[1]} {15 * h} {15 * h}\n")
+    f.write(f"{21} {dim} {h} {k} {nu} {kernelSupport} {1} {step} {acc[0]} {acc[1]} {15 * h} {15 * h}\n")
     f.write(f"0,{m},{5 * h},0,0,0\n")
     for x in range(0, 10):
         x1 = h * x
@@ -68,4 +68,4 @@ def breakingDam():
         f.write(f"1,{m},{h * 52 + diff},{h * x + diff},0,0\n")
         f.write(f"1,{m},{h * 53 + diff},{h * x + diff},0,0\n")
     f.close()
-breakingDam()
+plane()
