@@ -8,25 +8,14 @@ config conf1;
 auto kernel1 = kernel::Kernel(conf1);
 simulate::Simulator simulator1 = simulate::Simulator(conf1);
 
-config conf2;
-auto kernel2 = kernel::Kernel(conf2);
-simulate::Simulator simulator2 = simulate::Simulator(conf2);
-
 double upperError = 1.005;
 
-void setup() {
+void setup(char* path) {
     simulator1 = simulate::Simulator(conf1);
-    conf1 = simulator1.parseFile("./data/plane");
+    conf1 = simulator1.parseFile(path);
     kernel1 = kernel::Kernel(conf1);
     kernel1.initialize(simulator1.getParticleData());
     simulator1.addKernel(&kernel1);
-
-    simulator2 = simulate::Simulator(conf2);
-    conf2 = simulator2.parseFile("./data/void");
-    kernel2 = kernel::Kernel(conf2);
-    kernel2.initialize(simulator2.getParticleData());
-    simulator2.addKernel(&kernel2);
-
 }
 
 void printHeader(char* file) {
@@ -34,61 +23,6 @@ void printHeader(char* file) {
     myfile.open (file, std::ios::app);
     myfile << "k,m,v,a,b,e,\n";
     myfile.close();
-}
-
-void printResult(char* file, double k, double mass, double collisionEnergy) {
-    //Particle should be deflected upwards
-    bool isValid = simulator1.getParticles()[0].pos[1] < 100;
-    double error = (simulator1.getTotalEnergy() - simulator2.getTotalEnergy()) / collisionEnergy;
-    std::ofstream myfile;
-    myfile.open (file, std::ios::app);
-    myfile << k << "," << mass << "," << isValid << "," << simulator1.getTotalEnergy() << "," << simulator2.getTotalEnergy()<< "," << error << ",\n";
-    myfile.close();
-}
-
-void varyStiffness(char* file) {
-    for (int k = 1; k <= 100; k++) {
-        for (int init = 0; init < 50; init++) {
-            setup();
-            conf1.k = 0.1 * k;
-            conf2.k = 0.1 * k;
-            simulator1.updateConf(conf1);
-            simulator2.updateConf(conf2);
-            simulator1.getParticleData()[0].pos[1] = 10 + init;
-            simulator2.getParticleData()[0].pos[1] = 10 + init;
-            double collisionEnergy = 0;
-            for (int i = 0; i < 150; i++) {
-                simulator1.simulateStep();
-                simulator2.simulateStep();
-                if (simulator2.getParticles()[0].pos[1] > 100 && collisionEnergy == 0) {
-                    collisionEnergy = simulator2.getTotalEnergy();
-                }
-            }
-            printResult(file, conf1.k, simulator1.getParticles()[0].mass, collisionEnergy);
-        }
-    }
-}
-
-void varyMass(char* file) {
-    for (int k = 1; k <= 1000; k++) {
-        setup();
-        double mass = 0.1 * k;
-        for (int p = 0; p < 1; p++) {
-            particle* p1 = simulator1.getParticleData() + p;
-            p1->mass = mass;
-            p1-> restDensity = mass / std::pow(conf1.h, 2);
-            particle* p2 = simulator2.getParticleData() + p;
-            p2->mass = mass;
-            p2-> restDensity = mass / std::pow(conf1.h, 2);
-        }
-        std::cout << simulator1.getParticles()[0].mass << "\n";
-        for (int i = 0; i < 150; i++) {
-            simulator1.simulateStep();
-            simulator2.simulateStep();
-        }
-        std::cout << simulator1.getParticles()[0].pos[1] << "\n";
-        printResult(file, mass, mass, 0);
-    }
 }
 
 void resetScenario(double speed, int k, double timestep) {
@@ -236,27 +170,55 @@ int findMinimumStiffness(double initPos, int guess) {
 
 void plotEnergyLoss() {
     for (int i = 0; i <= 400; i++) {
-        setup();
+        setup("./data/plane");
         conf1.nu = i * 0.0025;
         simulator1.updateConf(conf1);
         std::cout << conf1.nu << ":" << getEnergyLoss(1500) << ",\n";
     }
 }
 
+void resetBulk(double speed, int k, double timestep) {
+    for (int i = 0; i < conf1.activeParticles; i++) {
+        simulator1.getParticleData()[i].speed = {0, speed};
+    }
+    conf1.k = k;
+    conf1.timestep = timestep;
+    simulator1.updateConf(conf1);
+}
+
+void isValidStiffness(double speed, double stiffness) {
+    setup("./data/tube");
+    resetBulk(speed, stiffness, 0.0001);
+    for (int  i = 0; i <= 15000; i++) {
+        simulator1.simulateStep();
+        if (i % 100 == 0) {
+            std::cout << i << "\n";
+        }
+    }
+    for (int j = 0; j < conf1.activeParticles; j++) {
+        particle p = simulator1.getParticles()[j];
+        if (p.pos[0] > 34 || p.pos[1] > 34 || p.pos[0] < 1 || p.pos[1] < 1) {
+            std::cout << "Fail: " << "\n";
+        }
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc < 3) throw "Fail\n";
-    setup();
+    /*
+    setup("./data/plain");
     int result = findMinimumStiffness(std::stod(argv[1]), std::stoi(argv[2]));
     if (argc > 3) {
         std::ofstream myfile;
         myfile.open (argv[3], std::ios::app);
         myfile << conf1.timestep << "," << argv[1] << "," << result << "\n";
     myfile.close();
-    }
+    }*/
     //conf1.k = std::stoi(argv[3]);
     //findMaximumTimestep(std::stod(argv[1]), std::stod(argv[2]));
     //if (argc > 4) {
     //    upperError = std::stoi(argv[4]);
     //}
     //plotEnergyLoss();
+    isValidStiffness(std::stod(argv[1]), std::stod(argv[2]));
 }

@@ -6,7 +6,6 @@
 #include <random>
 #include "structures.hpp"
 #include "kernel.hpp"
-#include <format>
 
 #include <stdio.h>
 #include <stdlib.h>
