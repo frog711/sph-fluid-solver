@@ -4,11 +4,11 @@ phi = 0
 h = 0.5
 n = 150 * 8 + 2 * 128 + 2500
 dim = 2
-k = 1000000
+k = 2500000
 m = 1000 * h * h
 nu = 0
 kernelSupport = 2
-step = 0.001
+step = 0.0001
 acc = [0, 9.81]
 
 def box():
@@ -68,4 +68,46 @@ def breakingDam():
         f.write(f"1,{m},{h * 52 + diff},{h * x + diff},0,0\n")
         f.write(f"1,{m},{h * 53 + diff},{h * x + diff},0,0\n")
     f.close()
-plane()
+
+def box(n, h):
+    f = open("box", "w+")
+    f.write(f"{16*(n+1) + n * n} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * n + 10) * h} {(2 * n + 10) * h}\n")
+    for i in range(0, n):
+        for j in range(0, n):
+            f.write(f"0,{m},{(i + 5) * h},{(j + 5 + n) * h},0,0\n")
+    for i in range(0, 2 * n + 2):
+        f.write(f"1,{m},{(i + 3) * h},{3 * h},0,0\n")
+        f.write(f"1,{m},{(i + 3) * h},{4 * h},0,0\n")
+
+        f.write(f"1,{m},{(5 + 2 * n) * h},{(i + 3) * h},0,0\n")
+        f.write(f"1,{m},{(6 + 2 * n) * h},{(i + 3) * h},0,0\n")
+
+        f.write(f"1,{m},{(i + 5) * h},{(2 * n + 5) * h},0,0\n")
+        f.write(f"1,{m},{(i + 5) * h},{(2 * n + 6) * h},0,0\n")
+
+        f.write(f"1,{m},{3 * h},{(i + 5) * h},0,0\n")
+        f.write(f"1,{m},{4 * h},{(i + 5) * h},0,0\n")
+
+def dam(n, m, h, vy):
+    f = open("tube", "w+")
+    f.write(f"{4*(1.5 * m + 4) + 4 * n + n * m} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * m + 10) * h} {(2 * m + 10) * h}\n")
+    for x in range(0, n):
+        for y in range(0, m):
+            f.write(f"0,{m},{(x + 5) * h},{(y + 5 + 0.5 * m) * h},0,{vy}\n")
+    for i in range(0, int(1.5 * m) + 4):
+        f.write(f"1,{m},{(5 + n) * h},{(i + 3) * h},0,0\n")
+        f.write(f"1,{m},{(6 + n) * h},{(i + 3) * h},0,0\n")
+
+        f.write(f"1,{m},{3 * h},{(i + 3) * h},0,0\n")
+        f.write(f"1,{m},{4 * h},{(i + 3) * h},0,0\n")
+    for i in range(0, n):
+        #continue
+        f.write(f"1,{m},{(i + 5) * h},{3 * h},0,0\n")
+        f.write(f"1,{m},{(i + 5) * h},{4 * h},0,0\n")
+
+        f.write(f"1,{m},{(i + 5) * h},{(1.5 * m + 5) * h},0,0\n")
+        f.write(f"1,{m},{(i + 5) * h},{(1.5 * m + 6) * h},0,0\n")
+        
+
+#box(30, 0.5)
+dam(15,40,0.5,1)

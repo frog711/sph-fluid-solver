@@ -95,11 +95,13 @@ namespace simulate {
                 if (particles[j].isStationary) {
                     coef = 2 * conf.nu * particles[j].mass / particles[i].density;
                 }
-                for (int d = 0; d < conf.dim; d++) {
-                    double vij = particles[i].speed[d] - particles[j].speed[d];
-                    double xij = particles[i].pos[d] - particles[j].pos[d];
-                    particles[i].acc[d] += coef * (vij * xij) / (xij * xij + 0.01 * conf.h * conf.h) * dW[d];
-                }
+                double vij0 = particles[i].speed[0] - particles[j].speed[0];
+                double xij0 = particles[i].pos[0] - particles[j].pos[0];
+                particles[i].acc[0] += coef * (vij0 * xij0) / (xij0 * xij0 + 0.01 * conf.h * conf.h) * dW[0];
+
+                double vij1 = particles[i].speed[1] - particles[j].speed[1];
+                double xij1 = particles[i].pos[1] - particles[j].pos[1];
+                particles[i].acc[1] += coef * (vij1 * xij1) / (xij1 * xij1 + 0.01 * conf.h * conf.h) * dW[1];
             }
             //std::cout << "Acc: " << particles[i].acc[0] << ", " << particles[i].acc[1] << "\n";
         }
@@ -118,7 +120,6 @@ namespace simulate {
             //std::cout << "Density: " << particles[i].density << " Pressure: " << particles[i].pressure << "\n";
         }
         for (int i = 0; i < conf.activeParticles; i++) {
-            std::vector<double> sumDW = {0.0, 0.0};
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
                 int j = particles[i].neighbors[k];
                 std::vector<double> dW = kernel->getDerivativeEntry(i, j);
@@ -127,10 +128,8 @@ namespace simulate {
                 if (particles[j].isStationary) {
                     coef = particles[j].mass * 2 * (particles[i].pressure / std::pow(particles[i].density, 2));
                 }
-                for (int d = 0; d < conf.dim; d++) {
-                    particles[i].acc[d] -= coef * dW[d];
-                    sumDW[d] += dW[d];
-                }
+                particles[i].acc[0] -= coef * dW[0];
+                particles[i].acc[1] -= coef * dW[1];
             }
         }
     }
@@ -149,9 +148,8 @@ namespace simulate {
 
     void Simulator::computeExternalForces() {
         for (int i = 0; i < conf.activeParticles; i++) {
-            for (int d = 0; d < conf.dim; d++) {
-                particles[i].acc[d] += conf.g[d];
-            }
+            particles[i].acc[0] += conf.g[0];
+            particles[i].acc[1] += conf.g[1];
         }
     }
 

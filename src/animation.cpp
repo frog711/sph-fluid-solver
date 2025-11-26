@@ -16,8 +16,8 @@ using namespace structures;
 namespace fs = std::filesystem;
 config conf;
 
-static int xRes = 600u;
-static int yRes = 600u;
+static int xRes = 700u;
+static int yRes = 700u;
 
 void saveScreen(sf::RenderTexture* texture, fs::path path) {
     auto modified = path.replace_extension(".png");

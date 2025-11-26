@@ -49,8 +49,8 @@ void runSimulation(std::string input, double seconds, int saveInterval, char* pa
     saveState(0, &simulator, path);
     for (int step = 0; step < seconds / conf.timestep; step++) {
         simulator.simulateStep();
-        std::cout << "Step: " << step << ": " << step % saveInterval << "\n";
         if ((step + 1) % saveInterval == 0) {
+            std::cout << "Step: " << step << "\n";
             saveState(step + 1, &simulator, path);
         }
     }

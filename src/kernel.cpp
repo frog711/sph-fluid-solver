@@ -38,12 +38,11 @@ namespace kernel {
         for (int i = 0; i < conf.activeParticles; i++) {
             particles[i].neighbors.push_back(i);
             for (int j = i + 1; j < conf.particleCount; j++) {
-                double dist2 = getSquaredDistance(particles[i].pos, particles[j].pos, conf.dim);
-                if (dist2 < std::pow(conf.kernelSupport * conf.h, 2)) {
-                    particles[i].neighbors.push_back(j);
-                }
-                if (dist2 < std::pow(conf.kernelSupport * conf.h, 2)) {
-                    particles[j].neighbors.push_back(i);
+                double distX = (particles[i].pos[0] - particles[j].pos[0]);
+                double distY = (particles[i].pos[1] - particles[j].pos[1]);
+                if (distX * distX + distY * distY < conf.kernelSupport * conf.h * conf.kernelSupport * conf.h) {
+                        particles[i].neighbors.push_back(j);
+                        particles[j].neighbors.push_back(i);
                 }
             }
         }
@@ -74,11 +73,15 @@ namespace kernel {
             kernel[i].clear();
             for (int j : particles[i].neighbors) {
                 if (j < i) continue;
-                double q = getDistance(particles[i].pos, particles[j].pos, conf.dim) / conf.h;
+                double distX = (particles[i].pos[0] - particles[j].pos[0]);
+                double distY = (particles[i].pos[1] - particles[j].pos[1]);
+                double q = std::sqrt(distX * distX + distY * distY) / conf.h;
+                double q2 = 2 - q; 
                 if (q < 1) {
-                    kernel[i][j] = alpha * (pow(2 - q, 3) - 4 * pow(1 - q, 3));
+                    double q1 = 1 - q;
+                    kernel[i][j] = alpha * (q2 * q2 * q2 - 4 * q1 * q1 * q1);
                 } else if (q < 2) {
-                    kernel[i][j] = alpha * pow(2 - q, 3);
+                    kernel[i][j] = alpha * q2 * q2 * q2;
                 } else {
                     kernel[i][j] = 0;
                 }
@@ -93,12 +96,16 @@ namespace kernel {
             for (int j : particles[i].neighbors) {
                 if (j < i) continue;
                 derivative[i][j].resize(conf.dim);
-                double dist = getDistance(particles[i].pos, particles[j].pos, conf.dim);
+                double distX = (particles[i].pos[0] - particles[j].pos[0]);
+                double distY = (particles[i].pos[1] - particles[j].pos[1]);
+                double dist = std::sqrt(distX * distX + distY * distY);
                 double inner = 0;
+                double q2 = 2 - dist / conf.h;
                 if (dist < conf.h) {
-                    inner = -3 * pow(2 - dist / conf.h, 2) + 12 * pow(1 - dist / conf.h, 2);
+                    double q1 = 1 - dist / conf.h;
+                    inner = -3 * q2 * q2 + 12 * q1 * q1;
                 } else if (dist < 2 * conf.h) {
-                    inner = -3 * pow(2 - dist / conf.h, 2);
+                    inner = -3 * q2 * q2;
                 }
                 double common = 0;
                 //Ignore elements with really low distance to avoid underflow

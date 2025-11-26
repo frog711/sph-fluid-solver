@@ -24,6 +24,7 @@ data2 = {
 }
 
 # Falling from height h, nu = 0
+# timestep 0.001
 dataSpeed = {
     0.0: 62550,
     1.0: 67460,
@@ -41,9 +42,42 @@ dataSpeed = {
 # timestep 0.0001
 dataSpeed2 = {
     0.0: 30280,
+    1.0: 56490,
+    2.0: 77140,
+    3.0: 103210,
+    4.0: 136840,
     5.0: 178780,
     6.0: 229380,
-    
+    7.0: 288860,
+    8.0: 357310,
+    9.0: 434800,
+    10.0: 521340
+
+}
+
+#timestep 0.00001
+dataSpeed3 = {
+    0:30260,
+    1:56480,
+    2:77130,
+    3:103200,
+    4:136830,
+    5:178750,
+    6:229350
+}
+
+dataSpeed4 = {
+    0:62550,
+    1:67440,
+    2:81830,
+    3:105340,
+    4:137820,
+    5:179230,
+    6:229640,
+    7:289040,
+    8:357460,
+    9:434970,
+    10:521510
 }
 
 fig, (ax1) = plt.subplots(1, 1, layout='constrained')
@@ -53,6 +87,9 @@ ax1.grid()
 ax1.grid(which="minor", color="0.9")
 #ax1.plot(data.keys(), data.values())
 ax1.plot(dataSpeed.keys(), dataSpeed.values())
+ax1.plot(dataSpeed2.keys(), dataSpeed2.values())
+ax1.plot(dataSpeed3.keys(), dataSpeed3.values())
+ax1.plot(range(0, 6), [4329 * x * x + 3577 * x + 52670 for x in range(0,6)] )
 #ax1.plot(range(0, 6), [19327 + 89722 * x for x in range(0,6)] )
 ax1.legend()
 plt.show()
