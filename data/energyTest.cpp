@@ -189,7 +189,7 @@ void resetBulk(double speed, int k, double timestep) {
 void isValidStiffness(double speed, double stiffness) {
     setup("./data/tube");
     resetBulk(speed, stiffness, 0.0001);
-    for (int  i = 0; i <= 15000; i++) {
+    for (int  i = 0; i < 15000; i++) {
         simulator1.simulateStep();
         if (i % 100 == 0) {
             std::cout << i << "\n";
@@ -198,7 +198,7 @@ void isValidStiffness(double speed, double stiffness) {
     for (int j = 0; j < conf1.activeParticles; j++) {
         particle p = simulator1.getParticles()[j];
         if (p.pos[0] > 34 || p.pos[1] > 34 || p.pos[0] < 1 || p.pos[1] < 1) {
-            std::cout << "Fail: " << "\n";
+            std::cout << "Fail: " << j << " " << p.pos[0] << " " << p.pos[1] << "\n";
         }
     }
 }

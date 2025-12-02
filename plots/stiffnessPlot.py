@@ -80,16 +80,30 @@ dataSpeed4 = {
     10:521510
 }
 
+dataTube = {
+    0: 204000,
+    1: 205000,
+    2: 223000,
+    5: 263000,
+    8: 341000,
+    10: 428000
+}
+
 fig, (ax1) = plt.subplots(1, 1, layout='constrained')
 # log x axis
 
 ax1.grid()
 ax1.grid(which="minor", color="0.9")
+ax1.set_title("Minimum stiffness to stop particle at border")
 #ax1.plot(data.keys(), data.values())
-ax1.plot(dataSpeed.keys(), dataSpeed.values())
-ax1.plot(dataSpeed2.keys(), dataSpeed2.values())
-ax1.plot(dataSpeed3.keys(), dataSpeed3.values())
-ax1.plot(range(0, 6), [4329 * x * x + 3577 * x + 52670 for x in range(0,6)] )
+ax1.plot(dataSpeed.keys(), dataSpeed.values(), label="t=0.001")
+ax1.plot(dataSpeed2.keys(), dataSpeed2.values(), label="t=0.0001")
+ax1.plot(dataSpeed3.keys(), dataSpeed3.values(), label="t=0.00001")
+#ax1.plot(range(0, 6), [4329 * x * x + 3577 * x + 52670 for x in range(0,6)], label="prediction")
+
+#ax1.plot(dataTube.keys(), dataTube.values(), label="Tube")
 #ax1.plot(range(0, 6), [19327 + 89722 * x for x in range(0,6)] )
+plt.xlabel("Particle speed")
+plt.ylabel("Minimum stiffness")
 ax1.legend()
 plt.show()

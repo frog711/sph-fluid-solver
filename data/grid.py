@@ -93,7 +93,7 @@ def dam(n, m, h, vy):
     f.write(f"{4*(1.5 * m + 4) + 4 * n + n * m} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * m + 10) * h} {(2 * m + 10) * h}\n")
     for x in range(0, n):
         for y in range(0, m):
-            f.write(f"0,{m},{(x + 5) * h},{(y + 5 + 0.5 * m) * h},0,{vy}\n")
+            f.write(f"0,{m},{(x + 5) * h},{(y + 5 + 0.5 * m - vy) * h},0,{0}\n")
     for i in range(0, int(1.5 * m) + 4):
         f.write(f"1,{m},{(5 + n) * h},{(i + 3) * h},0,0\n")
         f.write(f"1,{m},{(6 + n) * h},{(i + 3) * h},0,0\n")
@@ -110,4 +110,4 @@ def dam(n, m, h, vy):
         
 
 #box(30, 0.5)
-dam(15,40,0.5,2)
+dam(10,26,0.5,1)

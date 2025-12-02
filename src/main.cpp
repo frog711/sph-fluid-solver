@@ -14,8 +14,8 @@
 
 std::random_device r;
 std::default_random_engine e1(r());
-static int xRes = 700u;
-static int yRes = 700u;
+static int xRes = 775u;
+static int yRes = 775u;
 double maxSpeed = 0;
 std::vector<double> lost;
 
@@ -86,19 +86,13 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
             }
         }
         window.clear();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             simulator.simulateStep();
         }
-        std::ofstream myfile;
-        myfile.open (dump, std::ios::app);
-        for (int i = 0; i < conf.activeParticles; i++) {
-            writeAnalysis(simulator.getParticleData() + i, &myfile);
-        }
-        myfile.close();
         renderer.renderCircles();
 
         window.display();
-        std::cout << "Step: " << step << ": " << step % 10 << "\n";
+        //std::cout << "Step: " << step << ": " << step % 10 << "\n";
         //if (step % 10 == 0) {
         //    saveScreen(&window, step, path);
         //}

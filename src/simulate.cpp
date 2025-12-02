@@ -30,7 +30,7 @@ namespace simulate {
             particle current = this->particles[i];
             parser.parseNextParticle(this->particles.data() + i);
             if (particles[i].isStationary) particles[i].rgb = {char(200), char(200), char(200)};
-            else particles[i].rgb = {char(0), char(0), char(200)};
+            else particles[i].rgb = {char(100), char(100), char(255)};
             particles[i].restDensity = particles[i].mass / std::pow(conf.h, 2);
             particles[i].acc.resize(conf.dim);
             if (!particles[i].isStationary) this->conf.activeParticles++;
