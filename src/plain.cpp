@@ -22,7 +22,7 @@ std::vector<double> lost;
 
 structures::config conf;
 
-void saveState(int step, simulate::Simulator* sim, char* path) {
+void saveState(int step, simulate::Simulator* sim, char* path, double densityAvg) {
     std::stringstream files;
     files << path << "/step" << step << ".txt";
     std::string file = files.str();
@@ -37,6 +37,22 @@ void saveState(int step, simulate::Simulator* sim, char* path) {
         myfile << "," << particle.speed[0] << "," <<particle.speed[1] << "\n";
     }
     myfile.close();
+
+    std::stringstream stats;
+    stats << path << "/density.txt";
+    std::string statFile = stats.str();
+    std::ofstream densityFile;
+    densityFile.open (statFile, std::ios::app);
+    densityFile << step << "," << densityAvg << "\n";
+    densityFile.close();
+}
+
+double computeAverageDensity(simulate::Simulator simulator) {
+    double densitySum = 0;
+    for (int i = 0; i < conf.activeParticles; i++) {
+        densitySum += simulator.getParticles()[i].density;
+    }
+    return densitySum / conf.activeParticles;
 }
 
 void runSimulation(std::string input, double seconds, int saveInterval, char* path) {
@@ -45,12 +61,13 @@ void runSimulation(std::string input, double seconds, int saveInterval, char* pa
     kernel::Kernel kernel = kernel::Kernel(conf);
     kernel.initialize(simulator.getParticleData());
     simulator.addKernel(&kernel);
-    saveState(0, &simulator, path);
-    for (int step = 0; step < seconds / conf.timestep; step++) {
+    //saveState(0, &simulator, path, computeAverageDensity(simulator));
+    int initial = 2149200;
+    for (int step = initial; step < seconds / conf.timestep; step++) {
         simulator.simulateStep();
         if ((step + 1) % saveInterval == 0) {
             std::cout << "Step: " << step << "\n";
-            saveState(step + 1, &simulator, path);
+            saveState(step + 1, &simulator, path, computeAverageDensity(simulator));
         }
     }
 }

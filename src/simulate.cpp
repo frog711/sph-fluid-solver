@@ -71,37 +71,54 @@ namespace simulate {
     }
 
     void Simulator::computeAcceleration() {
-        for (int i = 0; i < conf.particleCount; i++) {
-            for (int d = 0; d < conf.dim; d++) particles[i].acc[d] = 0.0;
+        for (int i = 0; i < conf.activeParticles; i++) {
+            particles[i].acc[0] = 0.0;
+            particles[i].acc[1] = 0.0;
         }
         //std::cout << "Init: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        //auto t1 = clock();
         kernel->completeNeighborSearch();
+        //auto t2 = clock();
         kernel->calculateKernel();
-        kernel->calculateKernelDerivative();
+        //auto t3 = clock();
+        kernel->calculateKernelDerivative();    
+        //auto t4 = clock();
         computeExternalForces();
+        //auto t5 = clock();
         //std::cout << "Ext: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
         computePressureForces();
+        //auto t6 = clock();
         //std::cout << "Pre: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
         computeViscousForces();
         //std::cout << "Vic: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        //auto t7 = clock();
+        /*
+        kernelTime1 += (t2 - t1);
+        kernelTime2 += (t3 - t2);
+        kernelTime3 += (t4 - t3);
+        forceTime1 += (t5 - t4);
+        forceTime2 += (t6 - t5);
+        forceTime3 += (t7 - t6);
+        */
     }
 
     void Simulator::computeViscousForces() {
         for (int i = 0; i < conf.activeParticles; i++) {
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
                 int j = particles[i].neighbors[k];
-                std::vector<double> dW = kernel->getDerivativeEntry(i, j);
+                double dWX = particles[i].kernelDerivX[k];
+                double dWY = particles[i].kernelDerivY[k];
                 double coef = 2 * conf.nu * particles[j].mass / particles[j].density;
                 if (particles[j].isStationary) {
                     coef = 2 * conf.nu * particles[j].mass / particles[i].density;
                 }
                 double vij0 = particles[i].speed[0] - particles[j].speed[0];
                 double xij0 = particles[i].pos[0] - particles[j].pos[0];
-                particles[i].acc[0] += coef * (vij0 * xij0) / (xij0 * xij0 + 0.01 * conf.h * conf.h) * dW[0];
+                particles[i].acc[0] += coef * (vij0 * xij0) / (xij0 * xij0 + 0.01 * conf.h * conf.h) * dWX;
 
                 double vij1 = particles[i].speed[1] - particles[j].speed[1];
                 double xij1 = particles[i].pos[1] - particles[j].pos[1];
-                particles[i].acc[1] += coef * (vij1 * xij1) / (xij1 * xij1 + 0.01 * conf.h * conf.h) * dW[1];
+                particles[i].acc[1] += coef * (vij1 * xij1) / (xij1 * xij1 + 0.01 * conf.h * conf.h) * dWY;
             }
             //std::cout << "Acc: " << particles[i].acc[0] << ", " << particles[i].acc[1] << "\n";
         }
@@ -109,27 +126,26 @@ namespace simulate {
 
     void Simulator::computePressureForces() {
         //std::cout << "Start pressure computation\n";
+        double avgDensity = 0;
+        double avgNeighbors = 0;
         for (int i = 0; i < conf.activeParticles; i++) {
             particles[i].density = 0.0;
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
-                int j = particles[i].neighbors[k];
-                particles[i].density += particles[j].mass * kernel->getKernelEntry(i, j);
+                particles[i].density += particles[particles[i].neighbors[k]].mass * particles[i].kernel[k];
             }
-            particles[i].pressure = std::max(conf.k * (particles[i].density / particles[i].restDensity - 1), 0.0);
-            //std::cout << "Neighbor count: " << particles[i].neighbors.size() << "\n";
-            //std::cout << "Density: " << particles[i].density << " Pressure: " << particles[i].pressure << "\n";
+            avgDensity += particles[i].density;
+            particles[i].pressure = std::max(conf.k * ((particles[i].density / particles[i].restDensity) - 1), 0.0);
         }
         for (int i = 0; i < conf.activeParticles; i++) {
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
                 int j = particles[i].neighbors[k];
-                std::vector<double> dW = kernel->getDerivativeEntry(i, j);
-                double coef = particles[j].mass * (particles[i].pressure / std::pow(particles[i].density, 2) + 
-                    particles[j].pressure / std::pow(particles[j].density, 2));
+                double coef = particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density) + 
+                    particles[j].pressure / (particles[j].density * particles[j].density));
                 if (particles[j].isStationary) {
-                    coef = particles[j].mass * 2 * (particles[i].pressure / std::pow(particles[i].density, 2));
+                    coef = particles[j].mass * 2 * (particles[i].pressure / (particles[i].density * particles[i].density));
                 }
-                particles[i].acc[0] -= coef * dW[0];
-                particles[i].acc[1] -= coef * dW[1];
+                particles[i].acc[0] -= coef * particles[i].kernelDerivX[k];
+                particles[i].acc[1] -= coef * particles[i].kernelDerivY[k];
             }
         }
     }
@@ -155,10 +171,10 @@ namespace simulate {
 
     void Simulator::performUpdateStep() {
         for (int i = 0; i < conf.activeParticles; i++) {
-            for (int d = 0; d < conf.dim; d++) {
-                particles[i].speed[d] += particles[i].acc[d] * conf.timestep;
-                particles[i].pos[d] += particles[i].speed[d] * conf.timestep;
-            }
+            particles[i].speed[0] += particles[i].acc[0] * conf.timestep;
+            particles[i].speed[1] += particles[i].acc[1] * conf.timestep;
+            particles[i].pos[0] += particles[i].speed[0] * conf.timestep;
+            particles[i].pos[1] += particles[i].speed[1] * conf.timestep;
         }
     }
 

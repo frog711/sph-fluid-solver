@@ -23,9 +23,12 @@ namespace kernel {
         private:
             config conf;
             particle* particles;
-            std::vector<std::map<int, double>> kernel;
-            std::vector<std::map<int, std::vector<double>>> derivative; 
+            std::vector<int> gridCount;
+            std::vector<int> grid;
+            int gridMax;
             void quadraticNeighborSearch();
+            void cellNeighborhoodSearch(int i, int gridX, int gridY, int yMultiplier);
+            void gridNeighborhoodSearch();
             double getFactor();
     };
 }

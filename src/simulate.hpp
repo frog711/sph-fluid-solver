@@ -11,6 +11,12 @@ namespace simulate {
     class Simulator
     {
     public:
+        int kernelTime1;
+        int kernelTime2;
+        int kernelTime3;
+        int forceTime1;
+        int forceTime2;
+        int forceTime3;
         Simulator(config conf);
         void updateConf(config conf);
         config parseFile(std::string path);

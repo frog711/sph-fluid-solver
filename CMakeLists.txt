@@ -44,6 +44,10 @@ add_executable(animate src/animation.cpp)
 target_compile_features(animate PRIVATE cxx_std_17)
 target_link_libraries(animate PRIVATE SFML::Graphics simulation kernel render)
 
+add_executable(replay src/replay.cpp)
+target_compile_features(replay PRIVATE cxx_std_17)
+target_link_libraries(replay PRIVATE SFML::Graphics simulation kernel render)
+
 add_executable(plain src/plain.cpp)
 target_compile_features(plain PRIVATE cxx_std_17)
 target_link_libraries(plain PRIVATE simulation kernel)
@@ -51,6 +55,10 @@ target_link_libraries(plain PRIVATE simulation kernel)
 add_executable(reflectionTest data/energyTest.cpp)
 target_compile_features(reflectionTest PRIVATE cxx_std_17)
 target_link_libraries(reflectionTest PRIVATE simulation kernel)
+
+add_executable(debug test/debug.cpp)
+target_compile_features(debug PRIVATE cxx_std_17)
+target_link_libraries(debug PRIVATE simulation render kernel)
 
 enable_testing()
 

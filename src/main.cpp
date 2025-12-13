@@ -14,8 +14,8 @@
 
 std::random_device r;
 std::default_random_engine e1(r());
-static int xRes = 775u;
-static int yRes = 775u;
+static int xRes = 750u;
+static int yRes = 750u;
 double maxSpeed = 0;
 std::vector<double> lost;
 
@@ -86,9 +86,10 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
             }
         }
         window.clear();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             simulator.simulateStep();
         }
+        std::cout << "Step: " << step << "\n";
         renderer.renderCircles();
 
         window.display();
@@ -97,6 +98,7 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
         //    saveScreen(&window, step, path);
         //}
     }
+    std::cout << "Time: " << simulator.kernelTime1 << ", " << simulator.kernelTime2 << ", " << simulator.kernelTime3 << ", " << simulator.forceTime1 << ", " << simulator.forceTime2 << ", " << simulator.forceTime3 << "\n";
     window.close();
 }
 

@@ -16,6 +16,9 @@ namespace structures {
         std::vector<double> acc;
         std::vector<char> rgb;
         std::vector<int> neighbors;
+        std::vector<double> kernel;
+        std::vector<double> kernelDerivX;
+        std::vector<double> kernelDerivY;
     } particle;
 
     typedef struct config {

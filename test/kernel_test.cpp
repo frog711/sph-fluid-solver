@@ -8,12 +8,13 @@ TEST(NeighborSearch, regular) {
   structures::config conf = {0, true, 2, 0, 2, {}, {}};
 
   auto simulator = simulate::Simulator(conf);
-  conf = simulator.parseFile("../data/regular");
+  conf = simulator.parseFile("./data/regular");
   kernel::Kernel kernel = kernel::Kernel(conf);
   kernel.initialize(simulator.getParticleData());
   kernel.completeNeighborSearch();
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
+      std::cout << i << ": " << simulator.getParticles()[i].neighbors.size() << "\n";
       EXPECT_EQ(simulator.getParticles()[i].neighbors.size(), 9);
     }
   }
@@ -23,7 +24,7 @@ TEST(NeighborSearch, angled) {
   structures::config conf = {0, true, 2, 0, 2, {}, {}};
 
   auto simulator = simulate::Simulator(conf);
-  conf = simulator.parseFile("../data/angled");
+  conf = simulator.parseFile("./data/angled");
   kernel::Kernel kernel = kernel::Kernel(conf);
   kernel.initialize(simulator.getParticleData());
   kernel.completeNeighborSearch();
@@ -53,7 +54,7 @@ TEST(NeighborSearch, large) {
 TEST(Kernel, regular) {
   structures::config conf = {0, true, 2, 0, 2, {}, {}};
   auto simulator = simulate::Simulator(conf);
-  conf = simulator.parseFile("../data/regular");
+  conf = simulator.parseFile("./data/regular");
   kernel::Kernel kernel = kernel::Kernel(conf);
   kernel.initialize(simulator.getParticleData());
   kernel.completeNeighborSearch();
@@ -65,10 +66,38 @@ TEST(Kernel, regular) {
       double sum = 0;
       for (int k = 0; k < simulator.getParticles()[i].neighbors.size(); k++) {
         int j = simulator.getParticles()[i].neighbors[k];
-        sum = sum + kernel.getKernelEntry(i, j);
+        sum = sum + simulator.getParticles()[i].kernel[k];
         if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
       }
       double error = std::abs(vInv - sum) / vInv;
+      std::cout << "Regular:" << vInv / sum << "\n";
+      //EXPECT_FLOAT_EQ(error, 0);
+      EXPECT_TRUE(error < 0.001);
+    }
+  }
+}
+
+TEST(Kernel, small) {
+  structures::config conf = {0, true, 2, 0, 2, {}, {}};
+  auto simulator = simulate::Simulator(conf);
+  conf = simulator.parseFile("./data/regularSmall");
+  kernel::Kernel kernel = kernel::Kernel(conf);
+  kernel.initialize(simulator.getParticleData());
+  kernel.completeNeighborSearch();
+  
+  kernel.calculateKernel();
+  double vInv = 1.0 / (conf.h * conf.h);
+  for (int i = 0; i < simulator.getParticles().size(); i++) {
+    if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
+      double sum = 0;
+      for (int k = 0; k < simulator.getParticles()[i].neighbors.size(); k++) {
+        int j = simulator.getParticles()[i].neighbors[k];
+        sum = sum + simulator.getParticles()[i].kernel[k];
+        if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
+      }
+      double error = std::abs(vInv - sum) / vInv;
+      std::cout << "Small:" << vInv / sum << "\n";
+      //EXPECT_FLOAT_EQ(error, 0);
       EXPECT_TRUE(error < 0.001);
     }
   }
@@ -77,7 +106,7 @@ TEST(Kernel, regular) {
 TEST(Kernel, angled) {
   structures::config conf = {0, true, 2, 0, 2, {}, {}};
   auto simulator = simulate::Simulator(conf);
-  conf = simulator.parseFile("../data/angled");
+  conf = simulator.parseFile("./data/angled");
   kernel::Kernel kernel = kernel::Kernel(conf);
   kernel.initialize(simulator.getParticleData());
   kernel.completeNeighborSearch();
@@ -89,10 +118,12 @@ TEST(Kernel, angled) {
       double sum = 0;
       for (int k = 0; k < simulator.getParticles()[i].neighbors.size(); k++) {
         int j = simulator.getParticles()[i].neighbors[k];
-        sum = sum + kernel.getKernelEntry(i, j);
+        sum = sum + simulator.getParticles()[i].kernel[k];
         if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
       }
       double error = std::abs(vInv - sum) / vInv;
+      std::cout << "Angled:" << vInv / sum << "\n";
+      //EXPECT_FLOAT_EQ(error, 0);
       EXPECT_TRUE(error < 0.001);
     }
   }
@@ -101,7 +132,7 @@ TEST(Kernel, angled) {
 TEST(KernelGrad, regular) {
   structures::config conf = {0, true, 2, 0, 2, {}, {}};
   auto simulator = simulate::Simulator(conf);
-  conf = simulator.parseFile("../data/regular");
+  conf = simulator.parseFile("./data/regular");
   kernel::Kernel kernel = kernel::Kernel(conf);
   kernel.initialize(simulator.getParticleData());
   kernel.completeNeighborSearch();
@@ -130,7 +161,6 @@ TEST(KernelGrad, regular) {
         crossProduct12 += diffx * derivy;
         crossProduct21 += diffy * derivx;
         crossProduct22 += diffy * derivy;
-        if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
       }
       double errorx = std::abs(-1 * vInv - crossProduct11) / (vInv);
       double errory = std::abs(-1 * vInv - crossProduct22) / (vInv);
@@ -140,6 +170,8 @@ TEST(KernelGrad, regular) {
       EXPECT_TRUE(std::abs(crossProduct21) < 0.0000000001);
       EXPECT_TRUE(errorx < 0.02);
       EXPECT_TRUE(errory < 0.02);
+      std::cout << "Grad regular:" << -1 * vInv / crossProduct11 << ", " << -1 * vInv / crossProduct22 << "\n";
+      std::cout << "Grad regular:" << errorx << ", " << errory << "\n";
     }
   }
 }
@@ -147,7 +179,7 @@ TEST(KernelGrad, regular) {
 TEST(KernelGrad, angled) {
   structures::config conf = {0, true, 2, 0, 2, {}, {}};
   auto simulator = simulate::Simulator(conf);
-  conf = simulator.parseFile("../data/angled");
+  conf = simulator.parseFile("./data/angled");
   kernel::Kernel kernel = kernel::Kernel(conf);
   kernel.initialize(simulator.getParticleData());
   kernel.completeNeighborSearch();
@@ -176,7 +208,6 @@ TEST(KernelGrad, angled) {
         crossProduct12 += diffx * derivy;
         crossProduct21 += diffy * derivx;
         crossProduct22 += diffy * derivy;
-        if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
       }
       double errorx = std::abs(-1 * vInv - crossProduct11) / (vInv);
       double errory = std::abs(-1 * vInv - crossProduct22) / (vInv);
@@ -186,6 +217,7 @@ TEST(KernelGrad, angled) {
       EXPECT_TRUE(std::abs(crossProduct21) < 0.0000000001);
       EXPECT_TRUE(errorx < 0.02);
       EXPECT_TRUE(errory < 0.02);
+      std::cout << "Grad angled:" << errorx << ", " << errory << "\n";
     }
   }
 }
