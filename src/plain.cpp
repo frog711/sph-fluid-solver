@@ -62,7 +62,7 @@ void runSimulation(std::string input, double seconds, int saveInterval, char* pa
     kernel.initialize(simulator.getParticleData());
     simulator.addKernel(&kernel);
     //saveState(0, &simulator, path, computeAverageDensity(simulator));
-    int initial = 2149200;
+    int initial = 0;
     for (int step = initial; step < seconds / conf.timestep; step++) {
         simulator.simulateStep();
         if ((step + 1) % saveInterval == 0) {

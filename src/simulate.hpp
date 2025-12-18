@@ -30,6 +30,7 @@ namespace simulate {
         kernel::Kernel *kernel;
         std::default_random_engine e1;
         std::vector<particle> particles;
+        void checkBoundingBoxes();
         void performUpdateStep();
         void computeAcceleration();
         void computePressureForces();

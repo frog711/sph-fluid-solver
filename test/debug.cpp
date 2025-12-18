@@ -15,9 +15,13 @@ int main(int argc, char** argv) {
     kernel.initialize(simulator.getParticleData());
     std::cout << "Initialized\n";
     kernel.completeNeighborSearch();
+    simulator.addKernel(&kernel);
+    std::cout << "Step\n";
+    simulator.simulateStep();
+    std::cout << "Stepped\n";
     for (int i = 0; i < simulator.getParticles().size(); i++) {
         if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
-            std::cout << i << ": " << simulator.getParticles()[i].neighbors.size() << ", " << conf.h << ", " << conf.kernelSupport << "\n";
+            std::cout << i << ": " << simulator.getParticles()[i].density << ", " << simulator.getParticles()[i].restDensity << "\n";
         }
     }
 }

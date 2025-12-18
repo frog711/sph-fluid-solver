@@ -64,7 +64,9 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
     window.setPosition({100, 100});
     window.setFramerateLimit(144);
     auto simulator = simulate::Simulator(conf);
+    std::cout << "Parse\n";
     conf = simulator.parseFile(input);
+    std::cout << "Parsed\n";
     auto renderer = render::Renderer(&window, {xRes, yRes}, conf);
     kernel::Kernel kernel = kernel::Kernel(conf);
     kernel.initialize(simulator.getParticleData());

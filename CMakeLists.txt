@@ -26,11 +26,11 @@ add_library(parser src/parser.cpp)
 
 add_library(kernel src/kernel.cpp)
 target_compile_features(kernel PRIVATE cxx_std_17)
-target_link_libraries(kernel PRIVATE SFML::Graphics structures)
+target_link_libraries(kernel PRIVATE structures)
 
 add_library(simulation src/simulate.cpp)
 target_compile_features(simulation PRIVATE cxx_std_17)
-target_link_libraries(simulation PRIVATE SFML::Graphics parser structures)
+target_link_libraries(simulation PRIVATE parser structures)
 
 add_library(render src/render.cpp)
 target_compile_features(render PRIVATE cxx_std_17)

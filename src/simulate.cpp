@@ -21,7 +21,9 @@ namespace simulate {
     config Simulator::parseFile(std::string path) {
         auto parser = parser::Parser();
         bool parsed = parser.open(path);
+        std::cout << "Paths: " << path << "\n";
         if (!parsed) throw "File error";
+        std::cout << "Opened file\n";
         this->conf = parser.getParsedConfig();
         this->conf.activeParticles = 0;
         this->particles.resize(conf.particleCount);
@@ -68,6 +70,7 @@ namespace simulate {
     void Simulator::simulateStep() {
         computeAcceleration();
         performUpdateStep();
+        checkBoundingBoxes();
     }
 
     void Simulator::computeAcceleration() {
@@ -134,6 +137,7 @@ namespace simulate {
                 particles[i].density += particles[particles[i].neighbors[k]].mass * particles[i].kernel[k];
             }
             avgDensity += particles[i].density;
+            //double densityRatio = particles[i].density / particles[i].restDensity;
             particles[i].pressure = std::max(conf.k * ((particles[i].density / particles[i].restDensity) - 1), 0.0);
         }
         for (int i = 0; i < conf.activeParticles; i++) {
@@ -166,6 +170,19 @@ namespace simulate {
         for (int i = 0; i < conf.activeParticles; i++) {
             particles[i].acc[0] += conf.g[0];
             particles[i].acc[1] += conf.g[1];
+        }
+    }
+
+    void Simulator::checkBoundingBoxes() {
+        for (int i = 0; i < conf.activeParticles; i++) {
+            if (particles[i].pos[0] > conf.area[0] || particles[i].pos[1] > conf.area[1] || particles[i].pos[0] < 0 || particles[i].pos[1] < 0) {
+                particles[i] = particles[conf.activeParticles - 1];
+                particles[conf.activeParticles] = particles[conf.particleCount - 1];
+                particles.resize(conf.particleCount - 1);
+                conf.activeParticles--;
+                conf.particleCount--;
+                kernel->updateConf(conf);
+            }
         }
     }
 

@@ -114,6 +114,6 @@ def dam(nx, ny, h, vy):
         f.write(f"1,{m},{(i + 5) * h},{(1.5 * ny + 6) * h},0,0\n")
         
 
-#box(30, 0.5)
+box(30, 0.5)
 #dam(10,30,0.5,1)
-grid()
+#grid()

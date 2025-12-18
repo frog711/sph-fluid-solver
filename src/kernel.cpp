@@ -10,7 +10,8 @@
 #include <math.h>
 #include <algorithm>
 
-double correctionConst = 0.999139; 
+double correctionConst = 0.999139;
+//double correctionConst = 1;
 
 namespace kernel {
     using namespace structures;

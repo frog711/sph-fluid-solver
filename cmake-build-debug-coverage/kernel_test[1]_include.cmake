@@ -1,0 +1,5 @@
+if(EXISTS "/mnt/c/cygwin64/home/chri/Uni/MS2/Simulation/sph-fluid-solver/cmake-build-debug-coverage/kernel_test[1]_tests.cmake")
+  include("/mnt/c/cygwin64/home/chri/Uni/MS2/Simulation/sph-fluid-solver/cmake-build-debug-coverage/kernel_test[1]_tests.cmake")
+else()
+  add_test(kernel_test_NOT_BUILT kernel_test_NOT_BUILT)
+endif()

@@ -1,0 +1,604 @@
+        -:    0:Source:/mnt/c/cygwin64/home/chri/Uni/MS2/Simulation/sph-fluid-solver/src/simulate.cpp
+        -:    0:Graph:/mnt/c/cygwin64/home/chri/Uni/MS2/Simulation/sph-fluid-solver/cmake-build-debug-coverage/CMakeFiles/simulation.dir/src/simulate.cpp.gcno
+        -:    0:Data:/mnt/c/cygwin64/home/chri/Uni/MS2/Simulation/sph-fluid-solver/cmake-build-debug-coverage/CMakeFiles/simulation.dir/src/simulate.cpp.gcda
+        -:    0:Runs:1
+        -:    1:#include "simulate.hpp"
+        -:    2:#include "parser.hpp"
+        -:    3:#include "kernel.hpp"
+        -:    4:#include <iostream>
+        -:    5:#include <algorithm>
+        -:    6:#include <fstream>
+        -:    7:#include <string>
+        -:    8:namespace simulate {
+function _ZN8simulate9SimulatorC2EN10structures6configE called 1 returned 100% blocks executed 62%
+        1:    9:    Simulator::Simulator(config conf) { 
+        1:    9-block  0
+call    0 returned 1
+call    1 returned 1
+branch  2 taken 1 (fallthrough)
+branch  3 taken 0 (throw)
+        1:    9-block  1
+call    4 returned 1
+        1:   10:        std::random_device r;
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   11:        std::default_random_engine e1(r());
+        1:   11-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   11-block  1
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+        1:   12:        this->e1 = e1;
+        1:   13:        this->conf = conf;
+        1:   13-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   14:    }
+        1:   14-block  0
+call    0 returned 1
+    $$$$$:   14-block  1
+call    1 never executed
+    $$$$$:   14-block  2
+call    2 never executed
+    $$$$$:   14-block  3
+call    3 never executed
+        -:   15:
+function _ZN8simulate9Simulator10updateConfEN10structures6configE called 0 returned 0% blocks executed 0%
+    #####:   16:    void Simulator::updateConf(config conf) {
+    #####:   17:        this->kernel->updateConf(conf);
+    %%%%%:   17-block  0
+call    0 never executed
+branch  1 never executed (fallthrough)
+branch  2 never executed (throw)
+    %%%%%:   17-block  1
+call    3 never executed
+branch  4 never executed (fallthrough)
+branch  5 never executed (throw)
+    %%%%%:   17-block  2
+call    6 never executed
+    $$$$$:   17-block  3
+call    7 never executed
+    #####:   18:        this->conf = conf;
+call    0 never executed
+    #####:   19:    }
+        -:   20:
+function _ZN8simulate9Simulator9parseFileENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 58%
+        1:   21:    config Simulator::parseFile(std::string path) {
+        1:   22:        auto parser = parser::Parser();
+        1:   22-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   23:        bool parsed = parser.open(path);
+        1:   23-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   23-block  1
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+        1:   23-block  2
+call    6 returned 1
+    $$$$$:   23-block  3
+call    7 never executed
+    $$$$$:   23-block  4
+        1:   24:        std::cout << "Paths: " << path << "\n";
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   24-block  0
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+        1:   24-block  1
+call    6 returned 1
+branch  7 taken 1 (fallthrough)
+branch  8 taken 0 (throw)
+       1*:   25:        if (!parsed) throw "File error";
+        1:   25-block  0
+branch  0 taken 0 (fallthrough)
+branch  1 taken 1
+    %%%%%:   25-block  1
+call    2 never executed
+call    3 never executed
+        1:   26:        std::cout << "Opened file\n";
+        1:   26-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   27:        this->conf = parser.getParsedConfig();
+        1:   27-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   27-block  1
+call    3 returned 1
+call    4 returned 1
+    $$$$$:   27-block  2
+        1:   28:        this->conf.activeParticles = 0;
+        1:   29:        this->particles.resize(conf.particleCount);
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   30:        std::uniform_int_distribution<> distRGB(0, 255);
+        1:   30-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+      537:   31:        for (int i = 0; i < conf.particleCount; i++) {
+        1:   31-block  0
+      537:   31-block  1
+branch  0 taken 536
+branch  1 taken 1 (fallthrough)
+      536:   32:            particle current = this->particles[i];
+      536:   32-block  0
+call    0 returned 536
+call    1 returned 536
+branch  2 taken 536 (fallthrough)
+branch  3 taken 0 (throw)
+      536:   33:            parser.parseNextParticle(this->particles.data() + i);
+      536:   33-block  0
+call    0 returned 536
+call    1 returned 536
+branch  2 taken 536 (fallthrough)
+branch  3 taken 0 (throw)
+      536:   34:            if (particles[i].isStationary) particles[i].rgb = {char(200), char(200), char(200)};
+      536:   34-block  0
+call    0 returned 536
+branch  1 taken 236 (fallthrough)
+branch  2 taken 300
+      236:   34-block  1
+call    3 returned 236
+call    4 returned 236
+branch  5 taken 236 (fallthrough)
+branch  6 taken 0 (throw)
+      236:   34-block  2
+    $$$$$:   34-block  3
+      300:   35:            else particles[i].rgb = {char(100), char(100), char(255)};
+      300:   35-block  0
+call    0 returned 300
+call    1 returned 300
+branch  2 taken 300 (fallthrough)
+branch  3 taken 0 (throw)
+      300:   35-block  1
+    $$$$$:   35-block  2
+      536:   36:            particles[i].restDensity = particles[i].mass / std::pow(conf.h, 2);
+      536:   36-block  0
+call    0 returned 536
+call    1 returned 536
+call    2 returned 536
+      536:   37:            particles[i].acc.resize(conf.dim);
+call    0 returned 536
+call    1 returned 536
+branch  2 taken 536 (fallthrough)
+branch  3 taken 0 (throw)
+      536:   38:            if (!particles[i].isStationary) this->conf.activeParticles++;
+      536:   38-block  0
+call    0 returned 536
+branch  1 taken 300 (fallthrough)
+branch  2 taken 236
+      300:   38-block  1
+      536:   39:        }
+      536:   39-block  0
+call    0 returned 536
+    $$$$$:   39-block  1
+call    1 never executed
+        1:   40:        parser.close();
+        1:   40-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   41:        int uncheckedBoundary = conf.activeParticles;
+      301:   42:        for (int i = 0; i < conf.activeParticles; i++) {
+        1:   42-block  0
+      300:   42-block  1
+      301:   42-block  2
+branch  0 taken 300
+branch  1 taken 1 (fallthrough)
+        -:   43:            //Invariant: Particles < i are active
+        -:   44:            //Particles >= conf.activeParticles & < uncheckedBoundary are boundary
+      300:   45:            if (particles[i].isStationary) {
+      300:   45-block  0
+call    0 returned 300
+branch  1 taken 0 (fallthrough)
+branch  2 taken 300
+        -:   46:                //Search for fluid particle after boundary
+    #####:   47:                while (!particles[uncheckedBoundary++].isStationary) {
+    %%%%%:   47-block  0
+    %%%%%:   47-block  1
+call    0 never executed
+branch  1 never executed
+branch  2 never executed (fallthrough)
+    #####:   48:                    if (uncheckedBoundary == conf.particleCount) {
+    %%%%%:   48-block  0
+branch  0 never executed (fallthrough)
+branch  1 never executed
+    #####:   49:                        throw "Out of bounds";
+    %%%%%:   49-block  0
+call    0 never executed
+call    1 never executed
+        -:   50:                    }
+        -:   51:                }
+    #####:   52:                if (particles[uncheckedBoundary].isStationary) {
+    %%%%%:   52-block  0
+call    0 never executed
+branch  1 never executed (fallthrough)
+branch  2 never executed
+    #####:   53:                    throw "Invalid fluid particle count";
+    %%%%%:   53-block  0
+call    0 never executed
+call    1 never executed
+        -:   54:                }
+    #####:   55:                particle tmp = particles[i];
+    %%%%%:   55-block  0
+call    0 never executed
+call    1 never executed
+branch  2 never executed (fallthrough)
+branch  3 never executed (throw)
+    #####:   56:                particles[i] = particles[uncheckedBoundary];
+    %%%%%:   56-block  0
+call    0 never executed
+call    1 never executed
+call    2 never executed
+branch  3 never executed (fallthrough)
+branch  4 never executed (throw)
+    #####:   57:                particles[uncheckedBoundary] = tmp;
+    %%%%%:   57-block  0
+call    0 never executed
+call    1 never executed
+branch  2 never executed (fallthrough)
+branch  3 never executed (throw)
+    #####:   58:            }
+    %%%%%:   58-block  0
+call    0 never executed
+    $$$$$:   58-block  1
+call    1 never executed
+        -:   59:        }
+        2:   60:        return this->conf;
+        1:   60-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   60-block  1
+        1:   61:    }
+        1:   61-block  0
+call    0 returned 1
+    $$$$$:   61-block  1
+call    1 never executed
+        -:   62:
+function _ZN8simulate9Simulator9addKernelEPN6kernel6KernelE called 1 returned 100% blocks executed 100%
+        1:   63:    void Simulator::addKernel(kernel::Kernel* kernel) {
+        1:   64:        this->kernel = kernel;
+        1:   65:    }
+        -:   66:
+        -:   67:    /**
+        -:   68:    Simulate one time step for all particles
+        -:   69:    */
+function _ZN8simulate9Simulator12simulateStepEv called 2000 returned 100% blocks executed 100%
+     2000:   70:    void Simulator::simulateStep() {
+     2000:   71:        computeAcceleration();
+     2000:   71-block  0
+call    0 returned 2000
+     2000:   72:        performUpdateStep();
+call    0 returned 2000
+     2000:   73:    }
+        -:   74:
+function _ZN8simulate9Simulator19computeAccelerationEv called 2000 returned 100% blocks executed 100%
+     2000:   75:    void Simulator::computeAcceleration() {
+   602000:   76:        for (int i = 0; i < conf.activeParticles; i++) {
+     2000:   76-block  0
+   602000:   76-block  1
+branch  0 taken 600000
+branch  1 taken 2000 (fallthrough)
+   600000:   77:            particles[i].acc[0] = 0.0;
+   600000:   77-block  0
+call    0 returned 600000
+call    1 returned 600000
+   600000:   78:            particles[i].acc[1] = 0.0;
+call    0 returned 600000
+call    1 returned 600000
+        -:   79:        }
+        -:   80:        //std::cout << "Init: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        -:   81:        //auto t1 = clock();
+     2000:   82:        kernel->completeNeighborSearch();
+     2000:   82-block  0
+call    0 returned 2000
+        -:   83:        //auto t2 = clock();
+     2000:   84:        kernel->calculateKernel();
+call    0 returned 2000
+        -:   85:        //auto t3 = clock();
+     2000:   86:        kernel->calculateKernelDerivative();    
+call    0 returned 2000
+        -:   87:        //auto t4 = clock();
+     2000:   88:        computeExternalForces();
+call    0 returned 2000
+        -:   89:        //auto t5 = clock();
+        -:   90:        //std::cout << "Ext: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+     2000:   91:        computePressureForces();
+call    0 returned 2000
+        -:   92:        //auto t6 = clock();
+        -:   93:        //std::cout << "Pre: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+     2000:   94:        computeViscousForces();
+call    0 returned 2000
+        -:   95:        //std::cout << "Vic: " << particles[0].pos[1] << "," << particles[0].speed[1] << ","<< particles[0].acc[1] << "\n";
+        -:   96:        //auto t7 = clock();
+        -:   97:        /*
+        -:   98:        kernelTime1 += (t2 - t1);
+        -:   99:        kernelTime2 += (t3 - t2);
+        -:  100:        kernelTime3 += (t4 - t3);
+        -:  101:        forceTime1 += (t5 - t4);
+        -:  102:        forceTime2 += (t6 - t5);
+        -:  103:        forceTime3 += (t7 - t6);
+        -:  104:        */
+     2000:  105:    }
+        -:  106:
+function _ZN8simulate9Simulator20computeViscousForcesEv called 2000 returned 100% blocks executed 100%
+     2000:  107:    void Simulator::computeViscousForces() {
+   602000:  108:        for (int i = 0; i < conf.activeParticles; i++) {
+     2000:  108-block  0
+   600000:  108-block  1
+   602000:  108-block  2
+branch  0 taken 600000
+branch  1 taken 2000 (fallthrough)
+  8188268:  109:            for (int k = 0; k < particles[i].neighbors.size(); k++) {
+   600000:  109-block  0
+  8188268:  109-block  1
+call    0 returned 8188268
+call    1 returned 8188268
+branch  2 taken 7588268
+branch  3 taken 600000 (fallthrough)
+  7588268:  110:                int j = particles[i].neighbors[k];
+  7588268:  110-block  0
+call    0 returned 7588268
+call    1 returned 7588268
+  7588268:  111:                double dWX = particles[i].kernelDerivX[k];
+call    0 returned 7588268
+call    1 returned 7588268
+  7588268:  112:                double dWY = particles[i].kernelDerivY[k];
+call    0 returned 7588268
+call    1 returned 7588268
+  7588268:  113:                double coef = 2 * conf.nu * particles[j].mass / particles[j].density;
+call    0 returned 7588268
+call    1 returned 7588268
+  7588268:  114:                if (particles[j].isStationary) {
+call    0 returned 7588268
+branch  1 taken 665604 (fallthrough)
+branch  2 taken 6922664
+   665604:  115:                    coef = 2 * conf.nu * particles[j].mass / particles[i].density;
+   665604:  115-block  0
+call    0 returned 665604
+call    1 returned 665604
+        -:  116:                }
+  7588268:  117:                double vij0 = particles[i].speed[0] - particles[j].speed[0];
+  7588268:  117-block  0
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+  7588268:  118:                double xij0 = particles[i].pos[0] - particles[j].pos[0];
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+  7588268:  119:                particles[i].acc[0] += coef * (vij0 * xij0) / (xij0 * xij0 + 0.01 * conf.h * conf.h) * dWX;
+call    0 returned 7588268
+call    1 returned 7588268
+        -:  120:
+  7588268:  121:                double vij1 = particles[i].speed[1] - particles[j].speed[1];
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+  7588268:  122:                double xij1 = particles[i].pos[1] - particles[j].pos[1];
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+  7588268:  123:                particles[i].acc[1] += coef * (vij1 * xij1) / (xij1 * xij1 + 0.01 * conf.h * conf.h) * dWY;
+call    0 returned 7588268
+call    1 returned 7588268
+        -:  124:            }
+        -:  125:            //std::cout << "Acc: " << particles[i].acc[0] << ", " << particles[i].acc[1] << "\n";
+        -:  126:        }
+     2000:  127:    }
+        -:  128:
+function _ZN8simulate9Simulator21computePressureForcesEv called 2000 returned 100% blocks executed 100%
+     2000:  129:    void Simulator::computePressureForces() {
+        -:  130:        //std::cout << "Start pressure computation\n";
+     2000:  131:        double avgDensity = 0;
+     2000:  132:        double avgNeighbors = 0;
+   602000:  133:        for (int i = 0; i < conf.activeParticles; i++) {
+     2000:  133-block  0
+   602000:  133-block  1
+branch  0 taken 600000
+branch  1 taken 2000 (fallthrough)
+   600000:  134:            particles[i].density = 0.0;
+   600000:  134-block  0
+call    0 returned 600000
+  8188268:  135:            for (int k = 0; k < particles[i].neighbors.size(); k++) {
+  8188268:  135-block  0
+call    0 returned 8188268
+call    1 returned 8188268
+branch  2 taken 7588268
+branch  3 taken 600000 (fallthrough)
+  7588268:  136:                particles[i].density += particles[particles[i].neighbors[k]].mass * particles[i].kernel[k];
+  7588268:  136-block  0
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+call    4 returned 7588268
+call    5 returned 7588268
+        -:  137:            }
+   600000:  138:            avgDensity += particles[i].density;
+   600000:  138-block  0
+call    0 returned 600000
+   600000:  139:            particles[i].pressure = std::max(conf.k * ((particles[i].density / particles[i].restDensity) - 1), 0.0);
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+call    3 returned 600000
+        -:  140:        }
+   602000:  141:        for (int i = 0; i < conf.activeParticles; i++) {
+     2000:  141-block  0
+   600000:  141-block  1
+   602000:  141-block  2
+branch  0 taken 600000
+branch  1 taken 2000 (fallthrough)
+  8188268:  142:            for (int k = 0; k < particles[i].neighbors.size(); k++) {
+   600000:  142-block  0
+  8188268:  142-block  1
+call    0 returned 8188268
+call    1 returned 8188268
+branch  2 taken 7588268
+branch  3 taken 600000 (fallthrough)
+  7588268:  143:                int j = particles[i].neighbors[k];
+  7588268:  143-block  0
+call    0 returned 7588268
+call    1 returned 7588268
+  7588268:  144:                double coef = particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density) + 
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+  7588268:  145:                    particles[j].pressure / (particles[j].density * particles[j].density));
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+  7588268:  146:                if (particles[j].isStationary) {
+call    0 returned 7588268
+branch  1 taken 665604 (fallthrough)
+branch  2 taken 6922664
+   665604:  147:                    coef = particles[j].mass * 2 * (particles[i].pressure / (particles[i].density * particles[i].density));
+   665604:  147-block  0
+call    0 returned 665604
+call    1 returned 665604
+call    2 returned 665604
+call    3 returned 665604
+        -:  148:                }
+  7588268:  149:                particles[i].acc[0] -= coef * particles[i].kernelDerivX[k];
+  7588268:  149-block  0
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+  7588268:  150:                particles[i].acc[1] -= coef * particles[i].kernelDerivY[k];
+call    0 returned 7588268
+call    1 returned 7588268
+call    2 returned 7588268
+call    3 returned 7588268
+        -:  151:            }
+        -:  152:        }
+     2000:  153:    }
+        -:  154:
+function _ZN8simulate9Simulator14getTotalEnergyEv called 0 returned 0% blocks executed 0%
+    #####:  155:    double Simulator::getTotalEnergy() {
+    #####:  156:        double energy = 0;
+    #####:  157:        for (int i = 0; i < conf.activeParticles; i++) {
+    %%%%%:  157-block  0
+    %%%%%:  157-block  1
+    %%%%%:  157-block  2
+branch  0 never executed
+branch  1 never executed (fallthrough)
+    #####:  158:            energy += particles[i].pressure * conf.h * conf.h / conf.k;
+    %%%%%:  158-block  0
+call    0 never executed
+    #####:  159:            for (int d = 0; d < conf.dim; d++) {
+    %%%%%:  159-block  0
+branch  0 never executed
+branch  1 never executed (fallthrough)
+    #####:  160:                energy += 0.5 * particles[i].mass * particles[i].speed[d] * particles[i].speed[d];
+    %%%%%:  160-block  0
+call    0 never executed
+call    1 never executed
+call    2 never executed
+call    3 never executed
+call    4 never executed
+    #####:  161:                energy += conf.area[d] - particles[i].mass * conf.g[d] * particles[i].pos[d];
+call    0 never executed
+call    1 never executed
+call    2 never executed
+call    3 never executed
+call    4 never executed
+        -:  162:            }
+        -:  163:        }
+    #####:  164:        return energy;
+    %%%%%:  164-block  0
+        -:  165:    }
+        -:  166:
+function _ZN8simulate9Simulator21computeExternalForcesEv called 2000 returned 100% blocks executed 100%
+     2000:  167:    void Simulator::computeExternalForces() {
+   602000:  168:        for (int i = 0; i < conf.activeParticles; i++) {
+     2000:  168-block  0
+   602000:  168-block  1
+branch  0 taken 600000
+branch  1 taken 2000 (fallthrough)
+   600000:  169:            particles[i].acc[0] += conf.g[0];
+   600000:  169-block  0
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+   600000:  170:            particles[i].acc[1] += conf.g[1];
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+        -:  171:        }
+     2000:  172:    }
+        -:  173:
+function _ZN8simulate9Simulator17performUpdateStepEv called 2000 returned 100% blocks executed 100%
+     2000:  174:    void Simulator::performUpdateStep() {
+   602000:  175:        for (int i = 0; i < conf.activeParticles; i++) {
+     2000:  175-block  0
+   602000:  175-block  1
+branch  0 taken 600000
+branch  1 taken 2000 (fallthrough)
+   600000:  176:            particles[i].speed[0] += particles[i].acc[0] * conf.timestep;
+   600000:  176-block  0
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+call    3 returned 600000
+   600000:  177:            particles[i].speed[1] += particles[i].acc[1] * conf.timestep;
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+call    3 returned 600000
+   600000:  178:            particles[i].pos[0] += particles[i].speed[0] * conf.timestep;
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+call    3 returned 600000
+   600000:  179:            particles[i].pos[1] += particles[i].speed[1] * conf.timestep;
+call    0 returned 600000
+call    1 returned 600000
+call    2 returned 600000
+call    3 returned 600000
+        -:  180:        }
+     2000:  181:    }
+        -:  182:
+function _ZN8simulate9Simulator12getParticlesEv called 301 returned 100% blocks executed 100%
+      301:  183:    std::vector<particle> Simulator::getParticles() {
+      301:  184:        return this->particles;
+      301:  184-block  0
+call    0 returned 301
+        -:  185:    }
+        -:  186:
+function _ZN8simulate9Simulator15getParticleDataEv called 1 returned 100% blocks executed 100%
+        1:  187:    particle* Simulator::getParticleData() {
+        1:  188:        return this->particles.data();
+        1:  188-block  0
+call    0 returned 1
+        -:  189:    }
+        -:  190:
+function _ZN8simulate4signEi called 0 returned 0% blocks executed 0%
+    #####:  191:    int sign(int x) {
+    #####:  192:        return (x > 0) - (x < 0);
+    %%%%%:  192-block  0
+        -:  193:    }
+        -:  194:}
