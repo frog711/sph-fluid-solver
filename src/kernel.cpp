@@ -177,8 +177,12 @@ namespace kernel {
 
     double Kernel::getKernelEntry(int i, int j) {
         //Kernel is symmetric
-        //if (i <= j) return kernel[i][j];
-        //else return kernel[j][i];
+        for (int k = 0; k < particles[i].neighbors.size(); k++) {
+            if (particles[i].neighbors[k] == j) {
+                return particles[i].kernel[k];
+            }
+        }
+        std::cout << "Failed to find " << i << ", " << j << "\n";
         return 0.0;
     }
 

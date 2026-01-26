@@ -5,6 +5,8 @@
 #include <fstream>
 #include <random>
 namespace render {
+    double maxSpeed = 50;
+
     std::vector<std::vector<int>> shape = {{-2,0},{-1,-1},{-1,0},{-1,1},{0,-2},{0,-1},{0,0},{0,1},{0,2},
                 {1,-1},{1,0},{1,1},{2,0}};
 
@@ -12,6 +14,11 @@ namespace render {
         this->window = window;
         this->res = res;
         this->conf = conf;
+        double scaleInit = std::min(res[0] / conf.area[0], res[1] / conf.area[1]);
+        int radius = int(conf.h * scaleInit / 2);
+        this->scale = int(2 * radius / conf.h);
+        std::cout << "Scale: " << this->scale << ", " << res[0] << ", " << res[1] << ", " << conf.area[0] * scale << conf.area[1] * scale << "\n";
+
     }
 
     void Renderer::initialize(particle* particles) {
@@ -36,7 +43,7 @@ namespace render {
     int Renderer::transformSize(double initial) {
         if (conf.dim != 2) throw "Rendering is only supported for 2D particles";
         double maxRes = std::min(res[0] / conf.area[0], res[1] / conf.area[1]);
-        return initial * maxRes;
+        return initial * scale;
     }
 
     std::vector<int> Renderer::transformPoint(std::vector<double> initial) {
@@ -45,6 +52,7 @@ namespace render {
         double resY = res[1] / conf.area[1];
         std::vector<int> result;
         result.resize(2);
+        /*
         if (resX > resY) {
             double renderX = conf.area[0] * resY;
             result[1] = int(initial[1] * resY);
@@ -54,6 +62,10 @@ namespace render {
             result[0] = int(initial[0] * resX);
             result[1] = int(initial[1] * resX + (res[1] - renderY) / 2);
         }
+            */
+
+        result[0] = int(initial[0] * scale);
+        result[1] = int(initial[1] * scale);
         return result;
     }
 
@@ -72,7 +84,10 @@ namespace render {
             std::vector<int> pos = transformPoint(particles[i].pos);
             sf::CircleShape shape;
             shape.setRadius(size / 2);
-            shape.setFillColor(sf::Color(particles[i].rgb[0], particles[i].rgb[1], particles[i].rgb[2]));
+            double normalizedSpeed = std::min(particles[i].speed[0] * particles[i].speed[0] + particles[i].speed[1] * particles[i].speed[1], maxSpeed) / maxSpeed;
+            auto color = sf::Color(250 * normalizedSpeed, 250 * normalizedSpeed, 125 + 125 * normalizedSpeed);
+            if (particles[i].isStationary) color = sf::Color(250, 250, 250);
+            shape.setFillColor(color);
             shape.setOutlineThickness(0);
             shape.setPosition({pos[0] - size / 2, pos[1] - size / 2});
             window->draw(shape);

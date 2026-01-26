@@ -16,8 +16,8 @@ using namespace structures;
 namespace fs = std::filesystem;
 config conf;
 
-static int xRes = 700u;
-static int yRes = 700u;
+static int xRes = 1000u;
+static int yRes = 1000u;
 
 void saveScreen(sf::RenderTexture* texture, fs::path path) {
     auto modified = path.replace_extension(".png");
@@ -29,18 +29,19 @@ int main(int argc, char** argv)
     char* path = argv[1];
     
     sf::RenderTexture texture;
-    texture.resize({xRes, yRes});
 
 
     for (const auto & entry : fs::directory_iterator(path)) {
         std::cout << entry.path() << std::endl;
-        if (entry.path().extension() == ".txt") {
+        if (entry.path().extension() == ".txt" && entry.path().filename().string() != "density.txt" && entry.path().filename().string() != "cfl.txt") {
             auto simulate = simulate::Simulator(conf);
-            auto renderer = render::Renderer(&texture, {xRes, yRes}, conf);
             conf = simulate.parseFile(entry.path().u8string());
+            auto renderer = render::Renderer(&texture, {xRes, yRes}, conf);
+            std::cout << "Res: " << xRes << ", " << yRes << "\n"; 
+            texture.resize({xRes, yRes});
             texture.clear();
-            renderer.initialize(simulate.getParticleData());
             renderer.updateConf(conf);
+            renderer.initialize(simulate.getParticleData());
             renderer.renderCircles();
             texture.display();
             saveScreen(&texture, entry.path());

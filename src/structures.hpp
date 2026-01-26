@@ -28,6 +28,7 @@ namespace structures {
         double h;
         double k;
         double nu;
+        double gamma;
         double kernelSupport;
         bool fastRender;
         double timestep;

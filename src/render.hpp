@@ -18,6 +18,7 @@ namespace render {
         std::vector<int> transformPoint(std::vector<double> pos);
         int transformSize(double size);
         config conf;
+        int scale;
         std::vector<int> res;
         sf::RenderTarget* window;
         particle* particles;

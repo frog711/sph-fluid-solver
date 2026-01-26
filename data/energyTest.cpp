@@ -26,12 +26,9 @@ void printHeader(char* file) {
 }
 
 void resetScenario(double speed, int k, double timestep) {
-    double posx = simulator1.getParticleData()[0].pos[0];
-    simulator1.getParticleData()[0].pos = {2.5, 4.5};
+    setup("./data/plane");
     simulator1.getParticleData()[0].speed = {0, speed};
-    simulator1.getParticleData()[0].acc = {0, 0};
     conf1.k = k;
-    conf1.timestep = timestep;
     simulator1.updateConf(conf1);
 }
 
@@ -127,15 +124,22 @@ int findStiffnessBound(double initSpeed, int startingPoint, int step) {
         resetScenario(initSpeed, startingPoint + i * step, conf1.timestep);
         //std::cout << "Testing k=" << startingPoint + i * step << "\n";
         bool valid = true;
+        //printf("Running simulator wit %f - %i\n", simulator1.getConf().k, startingPoint + i * step);
         for (int s = 0; s < 5000; s++) {
             simulator1.simulateStep();
             //The particle phased through the barrier
-            if (simulator1.getParticles()[0].pos[1] > 5.5) {
-                //printf("Out of bounds %i\n", startingPoint + i * step);
-                s = 15000;
-                valid = false;
+            for (int i = 0; i < simulator1.getConf().activeParticles; i++) {
+            if (simulator1.getParticles()[0].pos[1] > 11) {
+                    //printf("Out of bounds %i\n", startingPoint + i * step);
+                    s = 15000;
+                    valid = false;
+                }
             }
             //The particle bounced
+            if (simulator1.getConf().activeParticles == 0) {
+                return startingPoint + i * step;
+            }
+            //Only for single particle
             if (simulator1.getParticles()[0].speed[1] < -0.1) {
                 return startingPoint + i * step;
             }
@@ -148,19 +152,24 @@ int findStiffnessBound(double initSpeed, int startingPoint, int step) {
     return -1;
 }
 
-int findMinimumStiffness(double initPos, int guess) {
+int findMinimumStiffness(double initSpeed, int guess) {
     int step = std::pow(10, std::floor(std::log10(guess)));
+    printf("Guess: %i-%i\n", guess, step);
     int currentGuess = 0;
-    while (step >= 10) {
+    while (step >= 1) {
         std::cout << "Searching range from " << currentGuess << " to " << currentGuess + 10 * step << "\n";
-        int result = findStiffnessBound(initPos, currentGuess, step);
+        int result = findStiffnessBound(initSpeed, currentGuess, step);
+        std::cout << "Found valid k: " << result << "\n";
         if (result < 0) {
             std::cout << "Could not find k between " << currentGuess << " and " << currentGuess + 10 * step << "\n";
             return -1;
         }
-        else {
+        else if (step > 1){
             //Guess should always be slightly to low
             currentGuess = result - step;
+            step = step / 10;
+        } else {
+            currentGuess = result;
             step = step / 10;
         }
         std::cout << "Best guess: " << currentGuess << "\n";
@@ -205,20 +214,14 @@ void isValidStiffness(double speed, double stiffness) {
 
 int main(int argc, char** argv) {
     if (argc < 3) throw "Fail\n";
-    /*
-    setup("./data/plain");
+    setup("./data/plane");
     int result = findMinimumStiffness(std::stod(argv[1]), std::stoi(argv[2]));
     if (argc > 3) {
         std::ofstream myfile;
         myfile.open (argv[3], std::ios::app);
         myfile << conf1.timestep << "," << argv[1] << "," << result << "\n";
     myfile.close();
-    }*/
-    //conf1.k = std::stoi(argv[3]);
-    //findMaximumTimestep(std::stod(argv[1]), std::stod(argv[2]));
-    //if (argc > 4) {
-    //    upperError = std::stoi(argv[4]);
-    //}
+    }
     //plotEnergyLoss();
-    isValidStiffness(std::stod(argv[1]), std::stod(argv[2]));
+    //isValidStiffness(std::stod(argv[1]), std::stod(argv[2]));
 }

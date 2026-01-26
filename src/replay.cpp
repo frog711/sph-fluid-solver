@@ -20,8 +20,8 @@
 
 std::random_device r;
 std::default_random_engine e1(r());
-static int xRes = 700u;
-static int yRes = 700u;
+static int xRes = 540u;
+static int yRes = 750u;
 double maxSpeed = 0;
 std::vector<double> lost;
 
@@ -56,7 +56,9 @@ void run(char* path, int step, int limit, char* output) {
         std::string file = files.str();
 
         auto simulator = simulate::Simulator(conf);
+        std::cout << "Start paring\n";
         conf = simulator.parseFile(file);
+        std::cout << "Parsed\n";
         auto kernel = kernel::Kernel(conf);
         kernel.initialize(simulator.getParticleData());
         simulator.addKernel(&kernel);

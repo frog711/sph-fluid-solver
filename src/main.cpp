@@ -14,8 +14,8 @@
 
 std::random_device r;
 std::default_random_engine e1(r());
-static int xRes = 750u;
-static int yRes = 750u;
+static int xRes = 840u;
+static int yRes = 840u;
 double maxSpeed = 0;
 std::vector<double> lost;
 
@@ -58,7 +58,21 @@ void writeEnergy(char* path, simulate::Simulator* sim) {
     myfile.close();
 }
 
-void runSimulation(std::string input, int simulationSteps, char* path) {
+void printAvgDensity(simulate::Simulator* sim, structures::config conf, sf::RenderWindow* window) {
+    //sf::Font font("arial.ttf"); 
+    std::cout << "Avg density: " << sim->avgDensity << "\n";
+    
+    /*sf::Text text(font); 
+    std::ostringstream strs;
+    strs << avgDensity;
+    std::string str = strs.str();
+    text.setString(str);
+    text.setCharacterSize(24);
+    window->draw(text);
+    */
+}
+
+void runSimulation(std::string input, int duration, char* path) {
     auto window = sf::RenderWindow(sf::VideoMode({xRes, yRes}), "CMake SFML Project");
     window.setSize({xRes, yRes});
     window.setPosition({100, 100});
@@ -78,6 +92,8 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
     dumpS << path << "/info.txt";
     std::string dump = dumpS.str();
 
+
+    int simulationSteps = int (double(duration) / conf.timestep); 
     for (int step = 0; step < simulationSteps; step++)
     {
         while (const std::optional event = window.pollEvent())
@@ -88,12 +104,12 @@ void runSimulation(std::string input, int simulationSteps, char* path) {
             }
         }
         window.clear();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 5; i++) {
             simulator.simulateStep();
         }
-        std::cout << "Step: " << step << "\n";
+        //std::cout << "Step: " << step << "\n";
         renderer.renderCircles();
-
+        //printAvgDensity(&simulator, conf, &window);
         window.display();
         //std::cout << "Step: " << step << ": " << step % 10 << "\n";
         //if (step % 10 == 0) {

@@ -17,12 +17,16 @@ namespace simulate {
         int forceTime1;
         int forceTime2;
         int forceTime3;
+        double avgDensity;
         Simulator(config conf);
         void updateConf(config conf);
+        config getConf();
         config parseFile(std::string path);
         void addKernel(kernel::Kernel* kernel);
         void simulateStep();
         double getTotalEnergy();
+        double getAverageDensity();
+        double getCFL();
         std::vector<particle> getParticles();
         particle* getParticleData();
     private:
@@ -36,6 +40,7 @@ namespace simulate {
         void computePressureForces();
         void computeViscousForces();
         void computeExternalForces();
+        void computeSurfaceTension();
     };
 
     int sign(int x);

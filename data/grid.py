@@ -29,12 +29,12 @@ def box():
 
 def plane():
     f = open("plane", "w+")
-    f.write(f"{21} {dim} {h} {k} {nu} {kernelSupport} {1} {step} {acc[0]} {acc[1]} {15 * h} {15 * h}\n")
-    f.write(f"0,{m},{5 * h},0,0,0\n")
-    for x in range(0, 10):
+    f.write(f"{61} {dim} {h} {k} {nu} {kernelSupport} {1} {step} {acc[0]} {acc[1]} {30 * h} {30 * h}\n")
+    f.write(f"0,{m},{15 * h},{19 * h},0,0\n")
+    for x in range(0, 30):
         x1 = h * x
-        f.write(f"1,{m},{x1},{10 * h},0,0\n")
-        f.write(f"1,{m},{x1},{11 * h},0,0\n")
+        f.write(f"1,{m},{x1},{20 * h},0,0\n")
+        f.write(f"1,{m},{x1},{21 * h},0,0\n")
     f.close()
 
 def grid():
@@ -112,8 +112,111 @@ def dam(nx, ny, h, vy):
 
         f.write(f"1,{m},{(i + 5) * h},{(1.5 * ny + 5) * h},0,0\n")
         f.write(f"1,{m},{(i + 5) * h},{(1.5 * ny + 6) * h},0,0\n")
-        
 
+def uTube(nx, ny, h, vy):
+    f = open("utube", "w+")
+
+    steps1 = math.pi * (nx + 2.5)
+    ang1 = 180 / steps1
+    steps2 = math.pi * (nx + 2)
+    ang2 = 180 / steps2
+
+    steps3 = math.pi * (0.75 * nx + 0.5)
+    ang3 = 180 / steps3
+    steps4 = math.pi * (0.75 * nx - 0.5)
+    ang4 = 180 / steps4
+    print(steps3)
+
+    n = nx * ny + 6 * (ny + 4) + 2 * 2 * nx + 3 * nx + int(steps1) + int(steps2) + 8 + int(steps3) + int(steps4)
+    f.write(f"{n} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * nx + 15) * h} {(ny + nx + 15) * h}\n")
+    for x in range(0, nx):
+        for y in range(0, ny):
+            f.write(f"0,{m},{(x + 5) * h},{(y + 5) * h},0,{0}\n")
+    for i in range(0, ny + 4):
+        f.write(f"1,{m},{(5 + nx) * h},{(i + 3) * h},0,0\n")
+        f.write(f"1,{m},{(6 + nx) * h},{(i + 3) * h},0,0\n")
+
+        f.write(f"1,{m},{(7 + 2 * nx) * h},{(i + 3) * h},0,0\n")
+        f.write(f"1,{m},{(8 + 2 * nx) * h},{(i + 3) * h},0,0\n")
+
+        f.write(f"1,{m},{3 * h},{(i + 3) * h},0,0\n")
+        f.write(f"1,{m},{4 * h},{(i + 3) * h},0,0\n")
+    for i in range(0, 2 * nx + 2):
+        #continue
+        if i != nx and i != nx + 1:
+            f.write(f"1,{m},{(i + 5) * h},{3 * h},0,0\n")
+            f.write(f"1,{m},{(i + 5) * h},{4 * h},0,0\n")
+        if i >= nx * 0.25 and i < nx or i < nx * 1.75 + 2 and i >= nx + 2:
+            f.write(f"1,{m},{(i + 5) * h},{(ny + 5) * h},0,0\n")
+            f.write(f"1,{m},{(i + 5) * h},{(ny + 6) * h},0,0\n")
+
+    for i in range(0, int(steps1) + 2):
+        f.write(f"1,{m},{(5.5 + nx) * h + (nx + 2.5) * h * math.cos(math.radians(ang1 * i))},{(ny + 7) * h + (nx + 2.5) * h * math.sin(math.radians(ang1 * i))},0,0\n")
+
+    for i in range(0, int(steps2) + 2):
+        f.write(f"1,{m},{(5.5 + nx) * h + (nx + 1.5) * h * math.cos(math.radians(ang2 * i))},{(ny + 7) * h + (nx + 1.5) * h * math.sin(math.radians(ang2 * i))},0,0\n")
+
+    for i in range(0, int(steps3) + 2):
+        f.write(f"1,{m},{(5.5 + nx) * h + (0.75 * nx + 0.5) * h * math.cos(math.radians(ang3 * i))},{(ny + 7) * h + (0.75 * nx + 0.5) * h * math.sin(math.radians(ang3 * i))},0,0\n")
+
+    for i in range(0, int(steps4) + 2):
+        f.write(f"1,{m},{(5.5 + nx) * h + (0.75 * nx - 0.5) * h * math.cos(math.radians(ang4 * i))},{(ny + 7) * h + (0.75 * nx - 0.5) * h * math.sin(math.radians(ang4 * i))},0,0\n")
+
+def uTube2(x, h):
+    f = open("utube2", "w+")
+    n = 6 * (x + 4) + (2 * x + 2) * 0.75
+
+    steps1 = math.pi * (x * 0.625 + 2.5)
+    ang1 = 180 / steps1
+
+    steps2 = math.pi * (x * 0.625 + 1.5)
+    ang2 = 180 / steps2
+
+    steps3 = math.pi * (x * 0.375 + 0.5)
+    ang3 = 180 / steps3
+
+    steps4 = math.pi * (x * 0.375 - 0.5)
+    ang4 = 180 / steps4
+    n = n = x * x + 6 * (x + 4) + 2 * 2 * x + 3 * x + int(steps1) + int(steps2) + 8 + int(steps3) + int(steps4)
+    f.write(f"{n} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * x + 15) * h} {(2 * x + 15) * h}\n")
+
+    for ix in range(0, x):
+        for iy in range(0, x):
+            f.write(f"0,{m},{(ix + 5) * h},{(iy + 5) * h},0,{0}\n")
+
+    for i in range(0, x + 4):
+        f.write(f"1,{m},{(i + 3) * h},{(5 + x) * h},0,0\n")
+        f.write(f"1,{m},{(i + 3) * h},{(6 + x) * h},0,0\n")
+
+        f.write(f"1,{m},{(i + 3) * h},{(7 + 2 * x) * h},0,0\n")
+        f.write(f"1,{m},{(i + 3) * h},{(8 + 2 * x) * h},0,0\n")
+
+        f.write(f"1,{m},{(i + 3) * h},{3 * h},0,0\n")
+        f.write(f"1,{m},{(i + 3) * h},{4 * h},0,0\n")
+    for i in range(0, 2 * x + 2):
+        #continue
+        if i != x and i != x + 1:
+            f.write(f"1,{m},{3 * h},{(i + 5) * h},0,0\n")
+            f.write(f"1,{m},{4 * h},{(i + 5) * h},0,0\n")
+        if i < 0.75 * x or i < x * 1.75 + 2 and i >= x + 2:
+            f.write(f"1,{m},{(x + 5) * h},{(i + 5) * h},0,0\n")
+            f.write(f"1,{m},{(x + 6) * h},{(i + 5) * h},0,0\n")    
+
+    for i in range(0, int(steps1) + 2):
+        f.write(f"1,{m},{(x + 7) * h + (x * 0.625 + 2.5) * h * math.sin(math.radians(ang1 * i))},{(5.5 + x * 1.375) * h + (x * 0.625 + 2.5) * h * math.cos(math.radians(ang1 * i))},0,0\n")
+
+    for i in range(0, int(steps2) + 2):
+        f.write(f"1,{m},{(x + 7) * h + (x * 0.625 + 1.5) * h * math.sin(math.radians(ang2 * i))},{(5.5 + x * 1.375) * h + (x * 0.625 + 1.5) * h * math.cos(math.radians(ang2 * i))},0,0\n")
+
+    for i in range(0, int(steps3) + 2):
+        f.write(f"1,{m},{(x + 7) * h + (x * 0.375 + 0.5) * h * math.sin(math.radians(ang3 * i))},{(5.5 + x * 1.375) * h + (x * 0.375 + 0.5) * h * math.cos(math.radians(ang3 * i))},0,0\n")
+
+    for i in range(0, int(steps4) + 2):
+        f.write(f"1,{m},{(x + 7) * h + (x * 0.375 - 0.5) * h * math.sin(math.radians(ang4 * i))},{(5.5 + x * 1.375) * h + (x * 0.375 - 0.5) * h * math.cos(math.radians(ang4 * i))},0,0\n")
+
+
+#plane()       
+#uTube2(28, 0.25)
 box(30, 0.5)
-#dam(10,30,0.5,1)
+#dam(16,16,0.25,1)
 #grid()
