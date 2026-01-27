@@ -104,7 +104,8 @@ void runSimulation(std::string input, int duration, char* path) {
             }
         }
         window.clear();
-        for (int i = 0; i < 5; i++) {
+        std::cout << "Step: " << step << "\n";
+        for (int i = 0; i < 1; i++) {
             simulator.simulateStep();
         }
         //std::cout << "Step: " << step << "\n";

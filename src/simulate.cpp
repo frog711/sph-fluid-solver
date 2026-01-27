@@ -137,7 +137,7 @@ namespace simulate {
                 particles[i].density += particles[particles[i].neighbors[k]].mass * particles[i].kernel[k];
             }
             avgDensity += particles[i].density;
-            particles[i].pressure = std::max(conf.k * ((particles[i].density / particles[i].restDensity) - 1), 0.0);
+            particles[i].pressure = std::max(conf.k * (particles[i].density - particles[i].restDensity), 0.0);
         }
         avgDensity = avgDensity / conf.activeParticles;
         for (int i = 0; i < conf.activeParticles; i++) {
@@ -147,7 +147,7 @@ namespace simulate {
                     particles[j].pressure / (particles[j].density * particles[j].density));
                 if (particles[j].isStationary) {
                     coef = particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density) + 
-                    particles[i].pressure / (particles[j].restDensity * particles[j].restDensity));
+                    particles[i].pressure / (particles[i].density * particles[i].density));
                 }
                 particles[i].acc[0] -= coef * particles[i].kernelDerivX[k];
                 particles[i].acc[1] -= coef * particles[i].kernelDerivY[k];

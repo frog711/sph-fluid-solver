@@ -27,7 +27,9 @@ void printHeader(char* file) {
 
 void resetScenario(double speed, int k, double timestep) {
     setup("./data/plane");
-    simulator1.getParticleData()[0].speed = {0, speed};
+    for (int i = 0; i < simulator1.getConf().activeParticles; i++) {
+        simulator1.getParticleData()[i].speed = {0, speed};
+    }
     conf1.k = k;
     simulator1.updateConf(conf1);
 }
@@ -124,25 +126,30 @@ int findStiffnessBound(double initSpeed, int startingPoint, int step) {
         resetScenario(initSpeed, startingPoint + i * step, conf1.timestep);
         //std::cout << "Testing k=" << startingPoint + i * step << "\n";
         bool valid = true;
+        std::cout << "k: " << simulator1.getConf().k << "\n";
         //printf("Running simulator wit %f - %i\n", simulator1.getConf().k, startingPoint + i * step);
-        for (int s = 0; s < 5000; s++) {
-            simulator1.simulateStep();
+        for (int s = 0; s < 50; s++) {
+            for (int i = 0; i < 50; i++) {
+                simulator1.simulateStep();
+            }
+            //std::cout << "Step: " << s << "\n";
             //The particle phased through the barrier
             for (int i = 0; i < simulator1.getConf().activeParticles; i++) {
-            if (simulator1.getParticles()[0].pos[1] > 11) {
+                if (simulator1.getParticles()[i].pos[1] > 11) {
+                    //std::cout << "Out of bounds: " << s << ", " << simulator1.getParticles()[i].pos[0] << ", " << simulator1.getParticles()[i].pos[1] << "\n";
                     //printf("Out of bounds %i\n", startingPoint + i * step);
                     s = 15000;
                     valid = false;
                 }
             }
+            if (simulator1.getConf().activeParticles < 0.2 * simulator1.getConf().activeParticles) {
+                return startingPoint + i * step;
+            }
             //The particle bounced
-            if (simulator1.getConf().activeParticles == 0) {
-                return startingPoint + i * step;
-            }
             //Only for single particle
-            if (simulator1.getParticles()[0].speed[1] < -0.1) {
+            /*if (simulator1.getParticles()[0].speed[1] < -0.1) {
                 return startingPoint + i * step;
-            }
+            }*/
         }
         //The particle did not bounce but also did not phase through the barrier
         if (valid) {

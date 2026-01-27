@@ -30,7 +30,7 @@ void saveState(int step, simulate::Simulator* sim, char* path, double densityAvg
     conf = sim->getConf();
     myfile.open (file, std::ios::app);
     myfile << conf.particleCount << " " << conf.dim << " " << conf.h << " " << conf.k << " " << conf.nu << " ";
-    myfile << conf.kernelSupport << " " << conf.fastRender << " " << conf.timestep << " ";
+    myfile << conf.gamma << " " << conf.kernelSupport << " " << conf.fastRender << " " << conf.timestep << " ";
     myfile << conf.g[0] << " " << conf.g[1] << " " << conf.area[0] << " " << conf.area[1] << "\n"; 
 
     for (auto particle : sim->getParticles()) {

@@ -5,7 +5,7 @@ h = 0.5
 n = 150 * 8 + 2 * 128 + 2500
 dim = 2
 k = 150000
-m = 1 * h * h
+m = 1000 * h * h
 nu = 0.1
 kernelSupport = 2
 step = 0.00001
@@ -28,9 +28,13 @@ def box():
     f.close()
 
 def plane():
-    f = open("plane", "w+")
+    f = open("planeSingle", "w+")
+    m = 250
     f.write(f"{61} {dim} {h} {k} {nu} {kernelSupport} {1} {step} {acc[0]} {acc[1]} {30 * h} {30 * h}\n")
     f.write(f"0,{m},{15 * h},{19 * h},0,0\n")
+    #for x in range(0, 10):
+    #    for y in range(0, 10):
+    #        f.write(f"0,{m},{(10 + x) * h},{(10 + y) * h},0,0\n")
     for x in range(0, 30):
         x1 = h * x
         f.write(f"1,{m},{x1},{20 * h},0,0\n")
@@ -113,7 +117,7 @@ def dam(nx, ny, h, vy):
         f.write(f"1,{m},{(i + 5) * h},{(1.5 * ny + 5) * h},0,0\n")
         f.write(f"1,{m},{(i + 5) * h},{(1.5 * ny + 6) * h},0,0\n")
 
-def uTube(nx, ny, h, vy):
+def uTube(nx, ny, h):
     f = open("utube", "w+")
 
     steps1 = math.pi * (nx + 2.5)
@@ -126,9 +130,9 @@ def uTube(nx, ny, h, vy):
     steps4 = math.pi * (0.75 * nx - 0.5)
     ang4 = 180 / steps4
     print(steps3)
-
+    m = 1000 * h * h
     n = nx * ny + 6 * (ny + 4) + 2 * 2 * nx + 3 * nx + int(steps1) + int(steps2) + 8 + int(steps3) + int(steps4)
-    f.write(f"{n} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * nx + 15) * h} {(ny + nx + 15) * h}\n")
+    f.write(f"{n} {dim} {h} {k} {nu} {0} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * nx + 15) * h} {(ny + nx + 15) * h}\n")
     for x in range(0, nx):
         for y in range(0, ny):
             f.write(f"0,{m},{(x + 5) * h},{(y + 5) * h},0,{0}\n")
@@ -178,7 +182,8 @@ def uTube2(x, h):
     steps4 = math.pi * (x * 0.375 - 0.5)
     ang4 = 180 / steps4
     n = n = x * x + 6 * (x + 4) + 2 * 2 * x + 3 * x + int(steps1) + int(steps2) + 8 + int(steps3) + int(steps4)
-    f.write(f"{n} {dim} {h} {k} {nu} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * x + 15) * h} {(2 * x + 15) * h}\n")
+    m = 1000 * h * h
+    f.write(f"{n} {dim} {h} {k} {nu} {0} {kernelSupport} 0 {step} {acc[0]} {acc[1]} {(2 * x + 15) * h} {(2 * x + 15) * h}\n")
 
     for ix in range(0, x):
         for iy in range(0, x):
@@ -214,9 +219,9 @@ def uTube2(x, h):
     for i in range(0, int(steps4) + 2):
         f.write(f"1,{m},{(x + 7) * h + (x * 0.375 - 0.5) * h * math.sin(math.radians(ang4 * i))},{(5.5 + x * 1.375) * h + (x * 0.375 - 0.5) * h * math.cos(math.radians(ang4 * i))},0,0\n")
 
-
+#uTube(28, 56, 0.5)
 #plane()       
 #uTube2(28, 0.25)
-box(30, 0.5)
-#dam(16,16,0.25,1)
+#box(50, 0.5)
+dam(16,16,0.5,1)
 #grid()
