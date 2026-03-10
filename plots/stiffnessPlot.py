@@ -1,26 +1,52 @@
 import matplotlib.pyplot as plt
 
 data = {
-    0.0: 27400,
-    0.5: 62560,
-    1.0: 109050,
-    1.5: 154410,
-    2.0: 199460,
-    2.5: 244310,
-    3.0: 289090,
-    3.5: 333870,
-    4.0: 378550,
-    4.5: 423240,
-    5.0: 467940
+    0.0: 63,
+    0.5: 65,
+    1.0: 68,
+    1.5: 74,
+    2.0: 83,
+    2.5: 93,
+    3.0: 106,
+    3.5: 122,
+    4.0: 139,
+    4.5: 159,
+    5.0: 181,
+    5.5: 205,
+    6.0: 231,
+    6.5: 260,
+    7.0: 291,
+    7.5: 324,
+    8.0: 360,
+    8.5: 398,
+    9.0: 438,
+    9.5: 480,
+    10.0: 525,
+    11.0: 621,
+    12.0: 726,
+    13.0: 840,
+    14.0: 964,
+    15.0: 1096
 }
 
 data2 = {
-    0.0: 27410,
-    1.0: 109040,
-    2.0: 199450,
-    3.0: 289080,
-    4.0: 378540,
-    5.0: 467940
+    0.0: 192,
+    1.0: 191,
+    1.5: 190,
+    2.0: 195,
+    3.0: 211,
+    4.0: 235,
+    5.0: 266,
+    6.0: 313,
+    7.0: 375,
+    8.0: 450,
+    9.0: 538,
+    10: 638,
+    11: 748,
+    12: 870,
+    13: 1003,
+    14: 1147,
+    15: 1301
 }
 
 # Falling from height h, nu = 0
@@ -94,16 +120,16 @@ fig, (ax1) = plt.subplots(1, 1, layout='constrained')
 
 ax1.grid()
 ax1.grid(which="minor", color="0.9")
-ax1.set_title("Minimum stiffness to stop particle at border")
+# ax1.set_title("Minimum stiffness for valid boundary handling")
 #ax1.plot(data.keys(), data.values())
-ax1.plot(dataSpeed.keys(), dataSpeed.values(), label="t=0.001")
-ax1.plot(dataSpeed2.keys(), dataSpeed2.values(), label="t=0.0001")
-ax1.plot(dataSpeed3.keys(), dataSpeed3.values(), label="t=0.00001")
+ax1.plot(data.keys(), data.values(), label="Single particle")
+ax1.plot(data2.keys(), data2.values(), label="Particle block")
+#ax1.plot(dataSpeed3.keys(), dataSpeed3.values(), label="t=0.00001")
 #ax1.plot(range(0, 6), [4329 * x * x + 3577 * x + 52670 for x in range(0,6)], label="prediction")
 
 #ax1.plot(dataTube.keys(), dataTube.values(), label="Tube")
 #ax1.plot(range(0, 6), [19327 + 89722 * x for x in range(0,6)] )
-plt.xlabel("Particle speed")
-plt.ylabel("Minimum stiffness")
+plt.xlabel("v (m/s)")
+plt.ylabel("k")
 ax1.legend()
 plt.show()

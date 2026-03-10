@@ -11,12 +11,6 @@ namespace simulate {
     class Simulator
     {
     public:
-        int kernelTime1;
-        int kernelTime2;
-        int kernelTime3;
-        int forceTime1;
-        int forceTime2;
-        int forceTime3;
         double avgDensity;
         Simulator(config conf);
         void updateConf(config conf);
@@ -26,7 +20,11 @@ namespace simulate {
         void simulateStep();
         double getTotalEnergy();
         double getAverageDensity();
+        double densityAtBoundary();
         double getCFL();
+        int countUndersampled();
+        double avgSpeed();
+        double speedAtBoundary();
         std::vector<particle> getParticles();
         particle* getParticleData();
     private:
@@ -34,6 +32,7 @@ namespace simulate {
         kernel::Kernel *kernel;
         std::default_random_engine e1;
         std::vector<particle> particles;
+        int maxBounds;
         void checkBoundingBoxes();
         void performUpdateStep();
         void computeAcceleration();

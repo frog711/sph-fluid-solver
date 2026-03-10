@@ -18,12 +18,12 @@ def getCFL(path, min, max, step, timestep):
         cfl += [timestep * maxSpeed / 0.25]
     return cfl
 
-cfl1 = getCFL("tubeDensity4", 500, 1000000, 500, 2e-5)
-cfl2 = getCFL("tubeDensity5", 500, 1000000, 500, 2e-5)
-cfl3 = getCFL("tubeDensity7", 0, 100000000, 5000, 2e-7)
+cfl1 = getCFL("box5", 500, 1000000, 500, 2e-5)
+#cfl2 = getCFL("tubeDensity5", 500, 1000000, 500, 2e-5)
+#cfl3 = getCFL("tubeDensity7", 0, 100000000, 5000, 2e-7)
 
 plt.plot(range(500, 1000000,500), cfl1)
-plt.plot(range(500, 1000000,500), cfl2)
-plt.plot(range(0, 1000000,50), cfl3)
+#plt.plot(range(500, 1000000,500), cfl2)
+#plt.plot(range(0, 1000000,50), cfl3)
 
 plt.show()

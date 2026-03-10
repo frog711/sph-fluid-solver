@@ -104,11 +104,6 @@ namespace kernel {
                 }
             }
         }
-        /*
-        for (int i = 0; i < conf.activeParticles; i++) {
-            std::cout << i << ": " << particles[i].neighbors.size() << "\n";
-        }
-            */
     }
 
     std::vector<int> Kernel::specificNeighborSearch(std::vector<double> pos) {
@@ -175,6 +170,7 @@ namespace kernel {
         };
     }
 
+    //Discontinued function, only used for legacy tests
     double Kernel::getKernelEntry(int i, int j) {
         //Kernel is symmetric
         for (int k = 0; k < particles[i].neighbors.size(); k++) {
@@ -186,7 +182,7 @@ namespace kernel {
         return 0.0;
     }
 
-    // This function should only be used for testing purposes
+    //Discontinued function, only used for legacy tests
     std::vector<double> Kernel::getDerivativeEntry(int i, int j) {
         std::vector<double> basic;
         basic.resize(conf.dim);

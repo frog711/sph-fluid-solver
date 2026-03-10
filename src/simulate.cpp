@@ -11,6 +11,7 @@ namespace simulate {
         std::default_random_engine e1(r());
         this->e1 = e1;
         this->conf = conf;
+        this->maxBounds = 0;
     }
 
     void Simulator::updateConf(config conf) {
@@ -77,6 +78,9 @@ namespace simulate {
         checkBoundingBoxes();
     }
 
+    /**
+     * Accumulate all accelerations for all particles at the current time step
+     */
     void Simulator::computeAcceleration() {
         for (int i = 0; i < conf.activeParticles; i++) {
             particles[i].acc[0] = 0.0;
@@ -85,12 +89,17 @@ namespace simulate {
         kernel->completeNeighborSearch();
         kernel->calculateKernel();
         kernel->calculateKernelDerivative();
+        
         computeExternalForces();
         computePressureForces();
         computeViscousForces();
-        computeSurfaceTension();
     }
 
+    /**
+     * Compute  surface tension force for all particles.
+     * This force is not used in the final solver, but could potentially be used in 
+     * further development
+     */
     void Simulator::computeSurfaceTension() {
         for (int i = 0; i < conf.activeParticles; i++) {
             double surfaceTensionX = 0;
@@ -105,6 +114,9 @@ namespace simulate {
         }
     }
 
+    /**
+     * Compute the viscous forces between all particles.
+     */
     void Simulator::computeViscousForces() {
         for (int i = 0; i < conf.activeParticles; i++) {
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
@@ -113,7 +125,7 @@ namespace simulate {
                 double dWY = particles[i].kernelDerivY[k];
                 double coef = 2 * conf.nu * particles[j].mass / particles[j].density;
                 if (particles[j].isStationary) {
-                    coef = 2 * conf.nu * particles[j].mass / particles[j].restDensity;
+                    coef = 2 * conf.nu * particles[j].mass / particles[i].density;
                 }
                 double vij0 = particles[i].speed[0] - particles[j].speed[0];
                 double xij0 = particles[i].pos[0] - particles[j].pos[0];
@@ -123,14 +135,13 @@ namespace simulate {
                 double xij1 = particles[i].pos[1] - particles[j].pos[1];
                 particles[i].acc[1] += coef * (vij1 * xij1) / (xij1 * xij1 + 0.01 * conf.h * conf.h) * dWY;
             }
-            //std::cout << "Acc: " << particles[i].acc[0] << ", " << particles[i].acc[1] << "\n";
         }
     }
 
+    /**
+     * Compute pressure forces between all neighboring particles
+     */
     void Simulator::computePressureForces() {
-        //std::cout << "Start pressure computation\n";
-        avgDensity = 0;
-        double avgNeighbors = 0;
         for (int i = 0; i < conf.activeParticles; i++) {
             particles[i].density = 0.0;
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
@@ -139,15 +150,20 @@ namespace simulate {
             avgDensity += particles[i].density;
             particles[i].pressure = std::max(conf.k * (particles[i].density - particles[i].restDensity), 0.0);
         }
-        avgDensity = avgDensity / conf.activeParticles;
         for (int i = 0; i < conf.activeParticles; i++) {
             for (int k = 0; k < particles[i].neighbors.size(); k++) {
                 int j = particles[i].neighbors[k];
-                double coef = particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density) + 
-                    particles[j].pressure / (particles[j].density * particles[j].density));
+                double coef;
                 if (particles[j].isStationary) {
+                    //Fix the density of boundary particles to rest density and mirror only the pressure
+                    //coef = particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density) + 
+                    //particles[i].pressure / (particles[j].restDensity * particles[j].restDensity));
+
+                    //Mirror pressure and density to boundary particles
+                    coef = 2 *  particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density));
+                } else {
                     coef = particles[j].mass * (particles[i].pressure / (particles[i].density * particles[i].density) + 
-                    particles[i].pressure / (particles[i].density * particles[i].density));
+                    particles[j].pressure / (particles[j].density * particles[j].density));
                 }
                 particles[i].acc[0] -= coef * particles[i].kernelDerivX[k];
                 particles[i].acc[1] -= coef * particles[i].kernelDerivY[k];
@@ -167,6 +183,10 @@ namespace simulate {
         return energy;
     }
 
+    /**
+     * Computes the average density of the fluid. 
+     * Only counts the density of compressed particles.
+     */
     double Simulator::getAverageDensity() {
         double densitySum = 0;
         int validParticles = 0;
@@ -179,6 +199,9 @@ namespace simulate {
         return densitySum / validParticles;
     }
 
+    /**
+     * Computes the CFL number for the current timestep
+     */
     double Simulator::getCFL() {
         double maxSpeed = 0;
         for (int i = 0; i < conf.activeParticles; i++) {
@@ -188,6 +211,38 @@ namespace simulate {
         return maxSpeed / conf.h * conf.timestep;
     }
 
+    int Simulator::countUndersampled() {
+        int count = 0;
+        for (int i = 0; i < conf.activeParticles; i++) {
+            if (particles[i].density < particles[i].restDensity) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    double Simulator::densityAtBoundary() {
+        int count = 0;
+        double densitySum = 0;
+        for (int i = 0; i < conf.activeParticles; i++) {
+            if (particles[i].pos[0] < 5 * conf.h || particles[i].pos[1] < 5 * conf.h ||
+                particles[i].pos[0] > conf.area[0] - 5 * conf.h || particles[i].pos[1] > conf.area[1] - 5 * conf.h ) {
+                    count++;
+                    densitySum += particles[i].density;
+                }
+        }
+        if (count == 0) return 0;
+        return densitySum / count;
+    }
+
+    double Simulator::avgSpeed() {
+        double speedSum = 0;
+        for (int i = 0; i < conf.activeParticles; i++) {
+            speedSum += std::sqrt(particles[i].speed[0] * particles[i].speed[0] + particles[i].speed[1] * particles[i].speed[1]);
+        }
+        return speedSum / conf.activeParticles;
+    }
+
     void Simulator::computeExternalForces() {
         for (int i = 0; i < conf.activeParticles; i++) {
             particles[i].acc[0] += conf.g[0];
@@ -195,6 +250,9 @@ namespace simulate {
         }
     }
 
+    /**
+     * Checks for particles that left the defined area of the simulation and removes them.
+     */
     void Simulator::checkBoundingBoxes() {
         for (int i = 0; i < conf.activeParticles; i++) {
             if (particles[i].pos[0] > conf.area[0] || particles[i].pos[1] > conf.area[1] || particles[i].pos[0] < 0 || particles[i].pos[1] < 0) {

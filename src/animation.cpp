@@ -33,13 +33,16 @@ int main(int argc, char** argv)
 
     for (const auto & entry : fs::directory_iterator(path)) {
         std::cout << entry.path() << std::endl;
-        if (entry.path().extension() == ".txt" && entry.path().filename().string() != "density.txt" && entry.path().filename().string() != "cfl.txt") {
+        fs::path path = entry.path();
+        auto modified = path.replace_extension(".png");
+        if (entry.path().extension() == ".txt" && entry.path().filename().string() != "density.txt" && entry.path().filename().string() != "cfl.txt" 
+            && entry.path().filename().string() != "speed.txt" && !fs::exists(modified)) {
             auto simulate = simulate::Simulator(conf);
             conf = simulate.parseFile(entry.path().u8string());
             auto renderer = render::Renderer(&texture, {xRes, yRes}, conf);
             std::cout << "Res: " << xRes << ", " << yRes << "\n"; 
             texture.resize({xRes, yRes});
-            texture.clear();
+            texture.clear(sf::Color::Black);
             renderer.updateConf(conf);
             renderer.initialize(simulate.getParticleData());
             renderer.renderCircles();

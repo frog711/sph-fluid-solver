@@ -17,6 +17,9 @@ namespace render {
         double scaleInit = std::min(res[0] / conf.area[0], res[1] / conf.area[1]);
         int radius = int(conf.h * scaleInit / 2);
         this->scale = int(2 * radius / conf.h);
+        offset.resize(2);
+        offset[0] = (this->res[0] - this->scale * conf.area[0]) / 2;
+        offset[1] = (this->res[1] - this->scale * conf.area[1]) / 2; 
         std::cout << "Scale: " << this->scale << ", " << res[0] << ", " << res[1] << ", " << conf.area[0] * scale << conf.area[1] * scale << "\n";
 
     }
@@ -48,24 +51,11 @@ namespace render {
 
     std::vector<int> Renderer::transformPoint(std::vector<double> initial) {
         if (conf.dim != 2) throw "Rendering is only supported for 2D particles";
-        double resX = res[0] / conf.area[0];
-        double resY = res[1] / conf.area[1];
         std::vector<int> result;
         result.resize(2);
-        /*
-        if (resX > resY) {
-            double renderX = conf.area[0] * resY;
-            result[1] = int(initial[1] * resY);
-            result[0] = int(initial[0] * resY + (res[0] - renderX) / 2);
-        } else {
-            double renderY = conf.area[1] * resX;
-            result[0] = int(initial[0] * resX);
-            result[1] = int(initial[1] * resX + (res[1] - renderY) / 2);
-        }
-            */
 
-        result[0] = int(initial[0] * scale);
-        result[1] = int(initial[1] * scale);
+        result[0] = int(initial[0] * scale + this->offset[0]);
+        result[1] = int(initial[1] * scale + this->offset[1]);
         return result;
     }
 
@@ -86,7 +76,7 @@ namespace render {
             shape.setRadius(size / 2);
             double normalizedSpeed = std::min(particles[i].speed[0] * particles[i].speed[0] + particles[i].speed[1] * particles[i].speed[1], maxSpeed) / maxSpeed;
             auto color = sf::Color(250 * normalizedSpeed, 250 * normalizedSpeed, 125 + 125 * normalizedSpeed);
-            if (particles[i].isStationary) color = sf::Color(250, 250, 250);
+            if (particles[i].isStationary) color = sf::Color(sf::Color::White);
             shape.setFillColor(color);
             shape.setOutlineThickness(0);
             shape.setPosition({pos[0] - size / 2, pos[1] - size / 2});

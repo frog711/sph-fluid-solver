@@ -14,7 +14,6 @@ TEST(NeighborSearch, regular) {
   kernel.completeNeighborSearch();
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
-      std::cout << i << ": " << simulator.getParticles()[i].neighbors.size() << "\n";
       EXPECT_EQ(simulator.getParticles()[i].neighbors.size(), 9);
     }
   }
@@ -60,21 +59,27 @@ TEST(Kernel, regular) {
   kernel.completeNeighborSearch();
   
   kernel.calculateKernel();
-  double vInv = 1.0 / 400.0;
+  double vInv = 1.0 / (conf.h * conf.h);
+  double maxDiff = 0;
+  double maxSum = 0;
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
       double sum = 0;
       for (int k = 0; k < simulator.getParticles()[i].neighbors.size(); k++) {
         int j = simulator.getParticles()[i].neighbors[k];
         sum = sum + simulator.getParticles()[i].kernel[k];
-        if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
+        if (kernel.getKernelEntry(i, j) > 0.0001) {
+          maxDiff = std::max((kernel.getKernelEntry(i, j) - kernel.getKernelEntry(j, i)) / kernel.getKernelEntry(i, j), maxDiff);
+        }
       }
       double error = std::abs(vInv - sum) / vInv;
-      std::cout << "Regular:" << vInv / sum << "\n";
+      maxSum = std::max(error, maxSum);
       //EXPECT_FLOAT_EQ(error, 0);
       EXPECT_TRUE(error < 0.001);
     }
   }
+  std::cout << "Small:" << maxSum << "\n";
+  std::cout << "max diff Small: " << maxDiff << "\n";
 }
 
 TEST(Kernel, small) {
@@ -87,20 +92,24 @@ TEST(Kernel, small) {
   
   kernel.calculateKernel();
   double vInv = 1.0 / (conf.h * conf.h);
+  double maxDiff = 0;
+  double maxSum = 0;
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
       double sum = 0;
       for (int k = 0; k < simulator.getParticles()[i].neighbors.size(); k++) {
         int j = simulator.getParticles()[i].neighbors[k];
         sum = sum + simulator.getParticles()[i].kernel[k];
-        if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
+        maxDiff = std::max((kernel.getKernelEntry(i, j) - kernel.getKernelEntry(j, i)) / kernel.getKernelEntry(i, j), maxDiff);
       }
       double error = std::abs(vInv - sum) / vInv;
-      std::cout << "Small:" << vInv / sum << "\n";
+      maxSum = std::max(error, maxSum);
       //EXPECT_FLOAT_EQ(error, 0);
       EXPECT_TRUE(error < 0.001);
     }
   }
+  std::cout << "Small:" << maxSum << "\n";
+  std::cout << "max diff Small: " << maxDiff << "\n";
 }
 
 TEST(Kernel, angled) {
@@ -113,20 +122,24 @@ TEST(Kernel, angled) {
   
   kernel.calculateKernel();
   double vInv = 1.0 / 400.0;
+  double maxDiff = 0;
+  double maxSum = 0;
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
       double sum = 0;
       for (int k = 0; k < simulator.getParticles()[i].neighbors.size(); k++) {
         int j = simulator.getParticles()[i].neighbors[k];
         sum = sum + simulator.getParticles()[i].kernel[k];
-        if (i == 35) std::cout << "Found " << i << "," << j << ": " <<kernel.getKernelEntry(i, j) << "\n";
+        maxDiff = std::max((kernel.getKernelEntry(i, j) - kernel.getKernelEntry(j, i)) / kernel.getKernelEntry(i, j), maxDiff);
       }
       double error = std::abs(vInv - sum) / vInv;
-      std::cout << "Angled:" << vInv / sum << "\n";
+      maxSum = std::max(error, maxSum);
       //EXPECT_FLOAT_EQ(error, 0);
       EXPECT_TRUE(error < 0.001);
     }
   }
+  std::cout << "Small:" << maxSum << "\n";
+  std::cout << "max diff Small: " << maxDiff << "\n";
 }
 
 TEST(KernelGrad, regular) {
@@ -139,6 +152,13 @@ TEST(KernelGrad, regular) {
   
   kernel.calculateKernelDerivative();
   double vInv = 1.0 / 400.0;
+  double maxDiff = 0;
+  double maxSum1 = 0;
+  double maxSum2 = 0;
+  double maxErrorx = 0;
+  double maxErrory = 0;
+  double maxCP12 = 0;
+  double maxCP21 = 0;
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
       double sum1 = 0;
@@ -151,6 +171,8 @@ TEST(KernelGrad, regular) {
         int j = simulator.getParticles()[i].neighbors[k];
         EXPECT_EQ(kernel.getDerivativeEntry(i, j)[0], -1 * kernel.getDerivativeEntry(j, i)[0]);
         EXPECT_EQ(kernel.getDerivativeEntry(i, j)[1], -1 * kernel.getDerivativeEntry(j, i)[1]);
+        maxDiff = std::max(kernel.getDerivativeEntry(i, j)[0] + kernel.getDerivativeEntry(j, i)[0], maxDiff);
+        maxDiff = std::max(kernel.getDerivativeEntry(i, j)[1] + kernel.getDerivativeEntry(j, i)[1], maxDiff);
         double derivx = kernel.getDerivativeEntry(i, j)[0];
         double derivy = kernel.getDerivativeEntry(i, j)[1];
         double diffx = simulator.getParticles()[i].pos[0] - simulator.getParticles()[j].pos[0];
@@ -170,10 +192,18 @@ TEST(KernelGrad, regular) {
       EXPECT_TRUE(std::abs(crossProduct21) < 0.0000000001);
       EXPECT_TRUE(errorx < 0.02);
       EXPECT_TRUE(errory < 0.02);
-      std::cout << "Grad regular:" << -1 * vInv / crossProduct11 << ", " << -1 * vInv / crossProduct22 << "\n";
-      std::cout << "Grad regular:" << errorx << ", " << errory << "\n";
+      maxSum1 = std::max(sum1, maxSum1);
+      maxSum2 = std::max(sum2, maxSum2);
+      maxErrorx = std::max(errorx, maxErrorx);
+      maxErrory = std::max(errory, maxErrory);
+      maxCP12 = std::max(std::abs(crossProduct21), maxCP12);
+      maxCP21 = std::max(std::abs(crossProduct21), maxCP21);
     }
   }
+  std::cout << "Grad regular diff: " << maxDiff << "\n";
+  std::cout << "Grad regular sum: " << maxSum1 << ", " << maxSum2 << "\n";
+  std::cout << "Grad regular:" << -maxCP12 << ", " << maxCP21 << "\n";
+  std::cout << "Grad regular:" << maxErrorx << ", " << maxErrory << "\n";
 }
 
 TEST(KernelGrad, angled) {
@@ -185,7 +215,14 @@ TEST(KernelGrad, angled) {
   kernel.completeNeighborSearch();
   
   kernel.calculateKernelDerivative();
-  double vInv = 1.0 / 400.0;
+  double vInv = 1.0 / (conf.h * conf.h);
+  double maxDiff = 0;
+  double maxSum1 = 0;
+  double maxSum2 = 0;
+  double maxErrorx = 0;
+  double maxErrory = 0;
+  double maxCP12 = 0;
+  double maxCP21 = 0;
   for (int i = 0; i < simulator.getParticles().size(); i++) {
     if (i % 10 != 0 && i % 10 != 9 && i > 9 && i < 90) {
       double sum1 = 0;
@@ -198,6 +235,8 @@ TEST(KernelGrad, angled) {
         int j = simulator.getParticles()[i].neighbors[k];
         EXPECT_EQ(kernel.getDerivativeEntry(i, j)[0], -1 * kernel.getDerivativeEntry(j, i)[0]);
         EXPECT_EQ(kernel.getDerivativeEntry(i, j)[1], -1 * kernel.getDerivativeEntry(j, i)[1]);
+        maxDiff = std::max(kernel.getDerivativeEntry(i, j)[0] + kernel.getDerivativeEntry(j, i)[0], maxDiff);
+        maxDiff = std::max(kernel.getDerivativeEntry(i, j)[1] + kernel.getDerivativeEntry(j, i)[1], maxDiff);
         double derivx = kernel.getDerivativeEntry(i, j)[0];
         double derivy = kernel.getDerivativeEntry(i, j)[1];
         double diffx = simulator.getParticles()[i].pos[0] - simulator.getParticles()[j].pos[0];
@@ -217,7 +256,16 @@ TEST(KernelGrad, angled) {
       EXPECT_TRUE(std::abs(crossProduct21) < 0.0000000001);
       EXPECT_TRUE(errorx < 0.02);
       EXPECT_TRUE(errory < 0.02);
-      std::cout << "Grad angled:" << errorx << ", " << errory << "\n";
+      maxSum1 = std::max(sum1, maxSum1);
+      maxSum2 = std::max(sum2, maxSum2);
+      maxErrorx = std::max(errorx, maxErrorx);
+      maxErrory = std::max(errory, maxErrory);
+      maxCP12 = std::max(std::abs(crossProduct21), maxCP12);
+      maxCP21 = std::max(std::abs(crossProduct21), maxCP21);
     }
   }
+  std::cout << "Grad angled diff: " << maxDiff << "\n";
+  std::cout << "Grad angled sum: " << maxSum1 << ", " << maxSum2 << "\n";
+  std::cout << "Grad angled:" << -maxCP12 << ", " << maxCP21 << "\n";
+  std::cout << "Grad angled:" << maxErrorx << ", " << maxErrory << "\n";
 }

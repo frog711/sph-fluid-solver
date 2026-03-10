@@ -19,6 +19,7 @@ namespace render {
         int transformSize(double size);
         config conf;
         int scale;
+        std::vector<int> offset;
         std::vector<int> res;
         sf::RenderTarget* window;
         particle* particles;

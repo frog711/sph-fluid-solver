@@ -22,7 +22,7 @@ std::vector<double> lost;
 
 structures::config conf;
 
-void saveState(int step, simulate::Simulator* sim, char* path, double densityAvg, double cfl) {
+void saveState(int step, simulate::Simulator* sim, char* path) {
     std::stringstream files;
     files << path << "/step" << step << ".txt";
     std::string file = files.str();
@@ -44,7 +44,7 @@ void saveState(int step, simulate::Simulator* sim, char* path, double densityAvg
     std::string statFile = stats.str();
     std::ofstream densityFile;
     densityFile.open (statFile, std::ios::app);
-    densityFile << step << "," << densityAvg << "\n";
+    densityFile << step << "," << sim->getAverageDensity() << "," << sim->densityAtBoundary() << "\n";
     densityFile.close();
 
     std::stringstream stats2;
@@ -52,7 +52,7 @@ void saveState(int step, simulate::Simulator* sim, char* path, double densityAvg
     std::string statFile2 = stats2.str();
     std::ofstream cflFile;
     cflFile.open (statFile2, std::ios::app);
-    cflFile << step << "," << cfl << "\n";
+    cflFile << step << "," << sim->getCFL() << "\n";
     cflFile.close();
 }
 
@@ -68,7 +68,7 @@ void runSimulation(std::string input, double seconds, int saveInterval, char* pa
         simulator.simulateStep();
         if ((step + 1) % saveInterval == 0) {
             std::cout << "Step: " << step << "\n";
-            saveState(step + 1, &simulator, path, simulator.getAverageDensity(), simulator.getCFL());
+            saveState(step + 1, &simulator, path);
         }
     }
 }
@@ -78,10 +78,5 @@ int main(int argc, char** argv) {
     double seconds = std::stod(argv[2]);
     int saveInterval = std::stoi(argv[3]);
     char* file = argv[4];
-    time_t start = clock();
-    time_t startTime = time(NULL);
     runSimulation(input, seconds, saveInterval, file);
-    time_t end = clock();
-    time_t endTime = time(NULL);
-    //writeMeasurements(file, input, simulationSteps, difftime(endTime, startTime), end - start);
 }

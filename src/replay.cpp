@@ -77,10 +77,6 @@ void run(char* path, int step, int limit, char* output) {
         }
 
         window.display();
-        //std::cout << "Step: " << step << ": " << step % 10 << "\n";
-        //if (step % 10 == 0) {
-        //    saveScreen(&window, step, path);
-        //}
     }
     window.close();
 }
@@ -89,7 +85,9 @@ int main(int argc, char** argv) {
     char* path = argv[1];
     int step = std::stoi(argv[2]);
     int limit = std::stoi(argv[3]);
-    char* out = argv[4];
+    char* out = "";
+    if (argc > 4) {
+        char* out = argv[4];
+    }
     run(path, step, limit, out);
-    //writeMeasurements(file, input, simulationSteps, difftime(endTime, startTime), end - start);
 }

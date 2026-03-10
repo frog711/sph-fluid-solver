@@ -9,8 +9,8 @@ namespace parser {
             std::string sa;
             getline(file, sa);
             auto tokens = split(sa, ' ');
-            if (tokens.size() < 9) {
-                std::cout << "Header should have at least 9 tokens\n";
+            if (tokens.size() < 8) {
+                std::cout << "Header should have at least 8 tokens\n";
                 throw "Invalid line";
             }
             conf.particleCount = std::stoi(tokens[0]);
@@ -19,17 +19,16 @@ namespace parser {
             conf.h = std::stod(tokens[2]);
             conf.k = std::stod(tokens[3]);
             conf.nu = std::stod(tokens[4]);
-            conf.gamma = std::stod(tokens[5]);
-            conf.kernelSupport = std::stod(tokens[6]);
-            conf.fastRender = std::stoi(tokens[7]);
-            conf.timestep = std::stod(tokens[8]);
-            if (tokens.size() != 2 * conf.dim + 9) {
-                std::cout << "Header should have 9 + 2 * " << conf.dim << " tokens\n";
+            conf.kernelSupport = std::stod(tokens[5]);
+            conf.fastRender = std::stoi(tokens[6]);
+            conf.timestep = std::stod(tokens[7]);
+            if (tokens.size() != 2 * conf.dim + 8) {
+                std::cout << "Header should have 8 + 2 * " << conf.dim << " tokens\n";
                 throw "Invalid line";
             }
             for (int i = 0; i < conf.dim; i++) {
-                conf.g.push_back(std::stod(tokens[9 + i]));
-                conf.area.push_back(std::stoi(tokens[9 + conf.dim + i]));
+                conf.g.push_back(std::stod(tokens[8 + i]));
+                conf.area.push_back(std::stoi(tokens[8 + conf.dim + i]));
             }
         }
         return file.is_open();

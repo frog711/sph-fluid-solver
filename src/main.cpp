@@ -21,58 +21,11 @@ std::vector<double> lost;
 
 structures::config conf;
 
-void writeAnalysis(simulate::particle* p, std::ofstream* file) {
-    double speed = std::sqrt(p->speed[0] * p->speed[0] + p->speed[1] * p->speed[1]);
-    if (speed > maxSpeed && p->rgb[0] == 0) {
-        maxSpeed = speed;
-        *file << "S: " << maxSpeed << "\n";
-    }
-    if ((p->pos[0] > 85 || p->pos[1]) > 85 && p->rgb[0] == 0) {
-        *file << "P: " << p->pos[0] << "," << p->pos[1] << "\n";
-        p->rgb = {char(200), 0, 0};
-    }
-}
-
-void saveScreen(sf::RenderWindow* window, int step, char* path) {
-    sf::Texture texture({xRes, yRes});
-    texture.update(*window);
-    std::stringstream files;
-    files << path << "/step" << step << ".png";
-    std::string file = files.str();
-    texture.copyToImage().saveToFile(file);
-    //    {
-    //std::cout << "screenshot saved to " << filename << std::endl;
-}
-
-void writeMeasurements(char* path, std::string particleCount, int simulationSteps, int seconds, time_t duration) {
-    std::ofstream myfile;
-    myfile.open (path, std::ios::app);
-    myfile << particleCount << "," << simulationSteps << "," << seconds << "," << duration << "\n";
-    myfile.close();
-}
-
-void writeEnergy(char* path, simulate::Simulator* sim) {
-    std::ofstream myfile;
-    myfile.open (path, std::ios::app);
-    myfile << sim->getTotalEnergy() << ",";
-    myfile.close();
-}
-
 void printAvgDensity(simulate::Simulator* sim, structures::config conf, sf::RenderWindow* window) {
-    //sf::Font font("arial.ttf"); 
     std::cout << "Avg density: " << sim->avgDensity << "\n";
-    
-    /*sf::Text text(font); 
-    std::ostringstream strs;
-    strs << avgDensity;
-    std::string str = strs.str();
-    text.setString(str);
-    text.setCharacterSize(24);
-    window->draw(text);
-    */
 }
 
-void runSimulation(std::string input, int duration, char* path) {
+void runSimulation(std::string input, int duration) {
     auto window = sf::RenderWindow(sf::VideoMode({xRes, yRes}), "CMake SFML Project");
     window.setSize({xRes, yRes});
     window.setPosition({100, 100});
@@ -88,12 +41,8 @@ void runSimulation(std::string input, int duration, char* path) {
     //std::cout << "Tmp: " << kernel.getDerivativeEntry(3, 4)[0] << ", " << kernel.getDerivativeEntry(4, 3)[0] << " \n";
     renderer.initialize(simulator.getParticleData());
 
-    std::stringstream dumpS;
-    dumpS << path << "/info.txt";
-    std::string dump = dumpS.str();
-
-
     int simulationSteps = int (double(duration) / conf.timestep); 
+    std::cout << "Steps: " << simulationSteps << ", " << duration << ", " << conf.timestep << "\n";
     for (int step = 0; step < simulationSteps; step++)
     {
         while (const std::optional event = window.pollEvent())
@@ -103,32 +52,19 @@ void runSimulation(std::string input, int duration, char* path) {
                 window.close();
             }
         }
-        window.clear();
+        window.clear(sf::Color::Black);
         std::cout << "Step: " << step << "\n";
         for (int i = 0; i < 1; i++) {
             simulator.simulateStep();
         }
-        //std::cout << "Step: " << step << "\n";
         renderer.renderCircles();
         //printAvgDensity(&simulator, conf, &window);
         window.display();
-        //std::cout << "Step: " << step << ": " << step % 10 << "\n";
-        //if (step % 10 == 0) {
-        //    saveScreen(&window, step, path);
-        //}
-    }
-    std::cout << "Time: " << simulator.kernelTime1 << ", " << simulator.kernelTime2 << ", " << simulator.kernelTime3 << ", " << simulator.forceTime1 << ", " << simulator.forceTime2 << ", " << simulator.forceTime3 << "\n";
-    window.close();
+    }window.close();
 }
 
 int main(int argc, char** argv) {
     std::string input = argv[1];
     int simulationSteps = std::stoi(argv[2]);
-    char* file = argv[3];
-    time_t start = clock();
-    time_t startTime = time(NULL);
-    runSimulation(input, simulationSteps, file);
-    time_t end = clock();
-    time_t endTime = time(NULL);
-    //writeMeasurements(file, input, simulationSteps, difftime(endTime, startTime), end - start);
+    runSimulation(input, simulationSteps);
 }
